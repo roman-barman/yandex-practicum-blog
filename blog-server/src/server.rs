@@ -1,3 +1,4 @@
+use crate::configuration::Configuration;
 use actix_web::{App, HttpServer};
 
 pub(crate) struct Server {
@@ -5,8 +6,10 @@ pub(crate) struct Server {
 }
 
 impl Server {
-    pub(crate) async fn start() -> anyhow::Result<Self> {
-        let server = HttpServer::new(App::new).bind(("127.0.0.1", 8080))?.run();
+    pub(crate) async fn start(config: Configuration) -> anyhow::Result<Self> {
+        let server = HttpServer::new(App::new)
+            .bind(config.get_server_configuration().get_address())?
+            .run();
         Ok(Self { server })
     }
 
