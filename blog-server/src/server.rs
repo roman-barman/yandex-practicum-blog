@@ -1,5 +1,6 @@
 use crate::configuration::Configuration;
 use actix_web::{App, HttpServer};
+use tracing_actix_web::TracingLogger;
 
 pub(crate) struct Server {
     server: actix_web::dev::Server,
@@ -7,7 +8,7 @@ pub(crate) struct Server {
 
 impl Server {
     pub(crate) async fn start(config: Configuration) -> anyhow::Result<Self> {
-        let server = HttpServer::new(App::new)
+        let server = HttpServer::new(|| App::new().wrap(TracingLogger::default()))
             .bind(config.get_server_configuration().get_address())?
             .run();
         Ok(Self { server })

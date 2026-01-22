@@ -31,10 +31,15 @@ impl Configuration {
 pub(crate) struct ServerConfiguration {
     host: String,
     port: u16,
+    log_level: String,
 }
 
 impl ServerConfiguration {
     pub(crate) fn get_address(&self) -> (&str, u16) {
         (self.host.as_str(), self.port)
+    }
+
+    pub(crate) fn get_log_level(&self) -> &str {
+        self.log_level.as_str()
     }
 }

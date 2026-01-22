@@ -9,3 +9,7 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"]}
 anyhow = "1"
 serde = { version = "1", features = ["derive"]}
 config = "0.15"
+tracing = "0.1"
+tracing-actix-web = "0.7"
+tracing-log = "0.2"
+tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter", "json", "chrono"] }
