@@ -1,6 +1,7 @@
 use crate::infrastructure::initialize_tracing_subscribe;
 use crate::server::Server;
 
+mod api;
 mod configuration;
 mod infrastructure;
 mod server;
