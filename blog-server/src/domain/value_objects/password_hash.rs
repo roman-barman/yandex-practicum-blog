@@ -14,3 +14,13 @@ impl PartialEq for PasswordHash {
         self.0.expose_secret() == other.0.expose_secret()
     }
 }
+
+impl<'a> TryFrom<&'a PasswordHash> for argon2::password_hash::PasswordHash<'a> {
+    type Error = argon2::password_hash::Error;
+    fn try_from(value: &'a PasswordHash) -> Result<Self, Self::Error> {
+        match argon2::password_hash::PasswordHash::new(value.0.expose_secret()) {
+            Ok(hash) => Ok(hash),
+            Err(e) => Err(e),
+        }
+    }
+}

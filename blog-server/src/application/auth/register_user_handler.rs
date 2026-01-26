@@ -1,4 +1,4 @@
-use crate::application::auth::calculate_password_hash::calculate_password_hash;
+use crate::application::auth::password::calculate_password_hash;
 use crate::domain::entities::User;
 use crate::domain::value_objects::{
     Email, EmailError, Password, PasswordError, UserName, UserNameError,
