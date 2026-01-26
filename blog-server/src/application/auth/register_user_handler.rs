@@ -1,12 +1,25 @@
+use crate::application::auth::calculate_password_hash::calculate_password_hash;
 use crate::domain::entities::User;
-use crate::domain::value_objects::{Email, EmailError, PasswordHash, UserName, UserNameError};
+use crate::domain::value_objects::{
+    Email, EmailError, Password, PasswordError, UserName, UserNameError,
+};
+use argon2::password_hash::SaltString;
+use argon2::password_hash::rand_core::OsRng;
 use secrecy::SecretString;
+use tokio::task::JoinError;
 
 #[tracing::instrument(name = "Handle register user command")]
-pub(crate) fn register_user_handler(cmd: RegisterUserCommand) -> Result<User, RegisterUserError> {
+pub(crate) async fn register_user_handler(
+    cmd: RegisterUserCommand,
+) -> Result<User, RegisterUserError> {
     let user_name = UserName::try_from(cmd.username)?;
     let email = Email::try_from(cmd.email)?;
-    let password_hash = PasswordHash::from(cmd.password);
+    let password = Password::try_from(cmd.password)?;
+    let salt = SaltString::generate(&mut OsRng);
+    let password_hash =
+        tokio::task::spawn_blocking(move || calculate_password_hash(&password, &salt))
+            .await?
+            .map_err(|err| RegisterUserError::Unexpected(err.to_string()))?;
 
     Ok(User::new(user_name, email, password_hash))
 }
@@ -38,5 +51,17 @@ impl From<EmailError> for RegisterUserError {
             EmailError::Regex(err) => RegisterUserError::Unexpected(err.to_string()),
             _ => RegisterUserError::InvalidUser(err.to_string()),
         }
+    }
+}
+
+impl From<PasswordError> for RegisterUserError {
+    fn from(value: PasswordError) -> Self {
+        RegisterUserError::InvalidUser(value.to_string())
+    }
+}
+
+impl From<JoinError> for RegisterUserError {
+    fn from(value: JoinError) -> Self {
+        RegisterUserError::Unexpected(value.to_string())
     }
 }

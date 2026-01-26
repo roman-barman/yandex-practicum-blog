@@ -7,6 +7,6 @@ use actix_web::{HttpResponse, post, web};
 pub(crate) async fn register_user(
     request: web::Json<RegisterUserCommand>,
 ) -> Result<HttpResponse, ApiError> {
-    let _ = register_user_handler(request.0)?;
+    let _ = register_user_handler(request.0).await?;
     Ok(HttpResponse::Created().finish())
 }
