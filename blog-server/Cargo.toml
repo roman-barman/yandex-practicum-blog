@@ -20,3 +20,15 @@ thiserror = "2"
 regex = "1"
 argon2 = { version = "0.5", features = ["std"] }
 rand_core = "0.9"
+
+[dependencies.sqlx]
+version = "0.8"
+default-features = false
+features = [
+    "runtime-tokio-rustls",
+    "macros",
+    "postgres",
+    "uuid",
+    "chrono",
+    "migrate"
+]
