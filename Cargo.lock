@@ -326,6 +326,7 @@ dependencies = [
  "actix-web",
  "anyhow",
  "argon2",
+ "async-trait",
  "chrono",
  "config",
  "rand_core 0.9.5",

@@ -1,6 +1,10 @@
+use secrecy::{ExposeSecret, SecretString};
+use sqlx::postgres::{PgConnectOptions, PgSslMode};
+
 #[derive(serde::Deserialize, Clone)]
 pub(crate) struct Configuration {
     server: ServerConfiguration,
+    database: DatabaseConfiguration,
 }
 
 impl Configuration {
@@ -25,6 +29,9 @@ impl Configuration {
     pub(crate) fn get_server_configuration(&self) -> &ServerConfiguration {
         &self.server
     }
+    pub(crate) fn get_database_configuration(&self) -> &DatabaseConfiguration {
+        &self.database
+    }
 }
 
 #[derive(serde::Deserialize, Clone)]
@@ -41,5 +48,33 @@ impl ServerConfiguration {
 
     pub(crate) fn get_log_level(&self) -> &str {
         self.log_level.as_str()
+    }
+}
+
+#[derive(serde::Deserialize, Clone)]
+pub(crate) struct DatabaseConfiguration {
+    username: String,
+    password: SecretString,
+    port: u16,
+    host: String,
+    database_name: String,
+    require_ssl: bool,
+}
+
+impl DatabaseConfiguration {
+    pub(crate) fn get_connection_options(&self) -> PgConnectOptions {
+        let ssl_mode = if self.require_ssl {
+            PgSslMode::Require
+        } else {
+            PgSslMode::Prefer
+        };
+
+        PgConnectOptions::new()
+            .host(&self.host)
+            .username(&self.username)
+            .password(self.password.expose_secret())
+            .port(self.port)
+            .database(&self.database_name)
+            .ssl_mode(ssl_mode)
     }
 }

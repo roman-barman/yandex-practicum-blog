@@ -1,4 +1,5 @@
 use crate::application::auth::password::calculate_password_hash;
+use crate::application::contracts::UserRepository;
 use crate::domain::entities::User;
 use crate::domain::value_objects::{
     Email, EmailError, Password, PasswordError, UserName, UserNameError,
@@ -6,11 +7,13 @@ use crate::domain::value_objects::{
 use argon2::password_hash::SaltString;
 use argon2::password_hash::rand_core::OsRng;
 use secrecy::SecretString;
+use std::sync::Arc;
 use tokio::task::JoinError;
 
-#[tracing::instrument(name = "Handle register user command")]
+#[tracing::instrument(name = "Handle register user command", skip(users_repo))]
 pub(crate) async fn register_user_handler(
     cmd: RegisterUserCommand,
+    users_repo: &Arc<dyn UserRepository>,
 ) -> Result<User, RegisterUserError> {
     let user_name = UserName::try_from(cmd.username)?;
     let email = Email::try_from(cmd.email)?;
@@ -20,6 +23,15 @@ pub(crate) async fn register_user_handler(
         tokio::task::spawn_blocking(move || calculate_password_hash(&password, &salt))
             .await?
             .map_err(|err| RegisterUserError::Unexpected(err.to_string()))?;
+
+    let is_username_exists = users_repo
+        .exist(&user_name)
+        .await
+        .map_err(|err| RegisterUserError::Unexpected(err.to_string()))?;
+
+    if is_username_exists {
+        return Err(RegisterUserError::UsernameExist);
+    }
 
     Ok(User::new(user_name, email, password_hash))
 }
@@ -35,6 +47,8 @@ pub(crate) struct RegisterUserCommand {
 pub(crate) enum RegisterUserError {
     #[error("invalid user: {0}")]
     InvalidUser(String),
+    #[error("username already exists")]
+    UsernameExist,
     #[error("unexpected error: {0}")]
     Unexpected(String),
 }

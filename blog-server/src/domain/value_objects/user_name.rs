@@ -4,6 +4,12 @@ const USERNAME_MAX_LENGTH: usize = 20;
 #[derive(Debug, PartialEq)]
 pub(crate) struct UserName(String);
 
+impl AsRef<str> for UserName {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
+
 impl TryFrom<String> for UserName {
     type Error = UserNameError;
 

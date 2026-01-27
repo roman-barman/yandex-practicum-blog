@@ -20,6 +20,7 @@ thiserror = "2"
 regex = "1"
 argon2 = { version = "0.5", features = ["std"] }
 rand_core = "0.9"
+async-trait = "0.1"
 
 [dependencies.sqlx]
 version = "0.8"

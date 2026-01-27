@@ -7,6 +7,8 @@ use serde::Serialize;
 pub(crate) enum ApiError {
     #[error("{0}")]
     UnprocessableEntity(String),
+    #[error("{0}")]
+    Conflict(String),
     #[error("internal server error")]
     InternalServerError,
 }
@@ -16,6 +18,7 @@ impl ResponseError for ApiError {
         match self {
             ApiError::UnprocessableEntity(_) => actix_web::http::StatusCode::UNPROCESSABLE_ENTITY,
             ApiError::InternalServerError => actix_web::http::StatusCode::INTERNAL_SERVER_ERROR,
+            ApiError::Conflict(_) => actix_web::http::StatusCode::CONFLICT,
         }
     }
 
@@ -38,6 +41,7 @@ impl From<RegisterUserError> for ApiError {
         match err {
             RegisterUserError::InvalidUser(error) => ApiError::UnprocessableEntity(error),
             RegisterUserError::Unexpected(_) => ApiError::InternalServerError,
+            RegisterUserError::UsernameExist => ApiError::Conflict(err.to_string()),
         }
     }
 }
