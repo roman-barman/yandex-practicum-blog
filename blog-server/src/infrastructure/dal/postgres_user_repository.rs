@@ -1,5 +1,5 @@
 use crate::application::contracts::UserRepository;
-use crate::domain::value_objects::UserName;
+use crate::domain::value_objects::{Email, UserName};
 use async_trait::async_trait;
 use sqlx::PgPool;
 
@@ -15,11 +15,12 @@ impl PostgresUserRepository {
 
 #[async_trait]
 impl UserRepository for PostgresUserRepository {
-    #[tracing::instrument(name = "Check if user exists in the DB", skip(self))]
-    async fn exist(&self, username: &UserName) -> Result<bool, anyhow::Error> {
+    #[tracing::instrument(name = "Check if username or email exists in the DB", skip(self))]
+    async fn exist(&self, username: &UserName, email: &Email) -> Result<bool, anyhow::Error> {
         let is_exists = sqlx::query_scalar!(
-            "SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)",
-            username.as_ref()
+            "SELECT EXISTS(SELECT 1 FROM users WHERE username = $1 OR email = $2)",
+            username.as_ref(),
+            email.as_ref(),
         )
         .fetch_one(&self.pool)
         .await?;

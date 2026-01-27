@@ -7,6 +7,12 @@ const EMAIL_PATTERN: &str = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$";
 #[derive(Debug, PartialEq)]
 pub(crate) struct Email(String);
 
+impl AsRef<str> for Email {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
+
 impl TryFrom<String> for Email {
     type Error = EmailError;
 

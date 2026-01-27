@@ -24,13 +24,13 @@ pub(crate) async fn register_user_handler(
             .await?
             .map_err(|err| RegisterUserError::Unexpected(err.to_string()))?;
 
-    let is_username_exists = users_repo
-        .exist(&user_name)
+    let is_username_or_email_exists = users_repo
+        .exist(&user_name, &email)
         .await
         .map_err(|err| RegisterUserError::Unexpected(err.to_string()))?;
 
-    if is_username_exists {
-        return Err(RegisterUserError::UsernameExist);
+    if is_username_or_email_exists {
+        return Err(RegisterUserError::UsernameOrEmailExist);
     }
 
     Ok(User::new(user_name, email, password_hash))
@@ -47,8 +47,8 @@ pub(crate) struct RegisterUserCommand {
 pub(crate) enum RegisterUserError {
     #[error("invalid user: {0}")]
     InvalidUser(String),
-    #[error("username already exists")]
-    UsernameExist,
+    #[error("username or email already exists")]
+    UsernameOrEmailExist,
     #[error("unexpected error: {0}")]
     Unexpected(String),
 }

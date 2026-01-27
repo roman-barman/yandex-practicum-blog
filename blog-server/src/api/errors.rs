@@ -41,7 +41,7 @@ impl From<RegisterUserError> for ApiError {
         match err {
             RegisterUserError::InvalidUser(error) => ApiError::UnprocessableEntity(error),
             RegisterUserError::Unexpected(_) => ApiError::InternalServerError,
-            RegisterUserError::UsernameExist => ApiError::Conflict(err.to_string()),
+            RegisterUserError::UsernameOrEmailExist => ApiError::Conflict(err.to_string()),
         }
     }
 }
