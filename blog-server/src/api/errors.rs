@@ -2,6 +2,7 @@ use crate::application::auth::RegisterUserError;
 use actix_web::ResponseError;
 use actix_web::http::header::ContentType;
 use serde::Serialize;
+use tracing_log::log::error;
 
 #[derive(Debug, thiserror::Error)]
 pub(crate) enum ApiError {
@@ -10,19 +11,20 @@ pub(crate) enum ApiError {
     #[error("{0}")]
     Conflict(String),
     #[error("internal server error")]
-    InternalServerError,
+    InternalServerError(String),
 }
 
 impl ResponseError for ApiError {
     fn status_code(&self) -> actix_web::http::StatusCode {
         match self {
             ApiError::UnprocessableEntity(_) => actix_web::http::StatusCode::UNPROCESSABLE_ENTITY,
-            ApiError::InternalServerError => actix_web::http::StatusCode::INTERNAL_SERVER_ERROR,
+            ApiError::InternalServerError(_) => actix_web::http::StatusCode::INTERNAL_SERVER_ERROR,
             ApiError::Conflict(_) => actix_web::http::StatusCode::CONFLICT,
         }
     }
 
     fn error_response(&self) -> actix_web::HttpResponse {
+        error!("Error: {:?}", self);
         actix_web::HttpResponse::build(self.status_code())
             .insert_header(ContentType::json())
             .json(ErrorResponse {
@@ -40,7 +42,7 @@ impl From<RegisterUserError> for ApiError {
     fn from(err: RegisterUserError) -> Self {
         match err {
             RegisterUserError::InvalidUser(error) => ApiError::UnprocessableEntity(error),
-            RegisterUserError::Unexpected(_) => ApiError::InternalServerError,
+            RegisterUserError::Unexpected(error) => ApiError::InternalServerError(error),
             RegisterUserError::UsernameOrEmailExist => ApiError::Conflict(err.to_string()),
         }
     }

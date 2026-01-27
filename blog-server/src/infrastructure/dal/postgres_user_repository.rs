@@ -1,6 +1,8 @@
 use crate::application::contracts::UserRepository;
+use crate::domain::entities::User;
 use crate::domain::value_objects::{Email, UserName};
 use async_trait::async_trait;
+use secrecy::ExposeSecret;
 use sqlx::PgPool;
 
 pub(crate) struct PostgresUserRepository {
@@ -26,5 +28,25 @@ impl UserRepository for PostgresUserRepository {
         .await?;
 
         Ok(is_exists.is_some_and(|x| x))
+    }
+
+    #[tracing::instrument(name = "Create user in the DB", skip(self))]
+    async fn create(&self, user: &User) -> Result<(), anyhow::Error> {
+        sqlx::query!(
+            r#"
+                INSERT INTO users
+                VALUES
+                ($1, $2, $3, $4, $5)
+            "#,
+            user.id().as_ref(),
+            user.username().as_ref(),
+            user.email().as_ref(),
+            user.password_hash().as_ref().expose_secret(),
+            user.created_at().as_ref(),
+        )
+        .execute(&self.pool)
+        .await?;
+
+        Ok(())
     }
 }

@@ -33,7 +33,13 @@ pub(crate) async fn register_user_handler(
         return Err(RegisterUserError::UsernameOrEmailExist);
     }
 
-    Ok(User::new(user_name, email, password_hash))
+    let user = User::new(user_name, email, password_hash);
+    users_repo
+        .create(&user)
+        .await
+        .map_err(|err| RegisterUserError::Unexpected(err.to_string()))?;
+
+    Ok(user)
 }
 
 #[derive(serde::Deserialize, Debug)]

@@ -8,3 +8,9 @@ impl Identification {
         Self(Uuid::new_v4())
     }
 }
+
+impl AsRef<Uuid> for Identification {
+    fn as_ref(&self) -> &Uuid {
+        &self.0
+    }
+}

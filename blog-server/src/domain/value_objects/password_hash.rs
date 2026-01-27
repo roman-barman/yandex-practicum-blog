@@ -3,6 +3,12 @@ use secrecy::{ExposeSecret, SecretString};
 #[derive(Debug)]
 pub struct PasswordHash(SecretString);
 
+impl AsRef<SecretString> for PasswordHash {
+    fn as_ref(&self) -> &SecretString {
+        &self.0
+    }
+}
+
 impl From<SecretString> for PasswordHash {
     fn from(s: SecretString) -> Self {
         Self(s)

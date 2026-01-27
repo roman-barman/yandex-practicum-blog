@@ -19,4 +19,24 @@ impl User {
             created_at: DateTime::now(),
         }
     }
+
+    pub(crate) fn id(&self) -> &Identification {
+        &self.id
+    }
+
+    pub(crate) fn username(&self) -> &UserName {
+        &self.username
+    }
+
+    pub(crate) fn email(&self) -> &Email {
+        &self.email
+    }
+
+    pub(crate) fn password_hash(&self) -> &PasswordHash {
+        &self.password_hash
+    }
+
+    pub(crate) fn created_at(&self) -> &DateTime {
+        &self.created_at
+    }
 }
