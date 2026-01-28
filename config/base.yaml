@@ -9,3 +9,5 @@ database:
   password: "password"
   database_name: "blog"
   require_ssl: false
+jwt:
+  secret: "secret"

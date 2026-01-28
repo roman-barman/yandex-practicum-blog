@@ -1,7 +1,7 @@
 use crate::api;
 use crate::application::contracts::UserRepository;
 use crate::configuration::Configuration;
-use crate::infrastructure::PostgresUserRepository;
+use crate::infrastructure::{JwtService, PostgresUserRepository};
 use actix_web::{App, HttpServer, web};
 use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
@@ -17,6 +17,9 @@ impl Server {
             .connect_lazy_with(config.get_database_configuration().get_connection_options());
         let user_repository: web::Data<Arc<dyn UserRepository>> =
             web::Data::new(Arc::new(PostgresUserRepository::new(pg_pool)));
+        let jwt_service = web::Data::new(JwtService::new(
+            config.get_jwt_configuration().get_secret().clone(),
+        ));
 
         let server = HttpServer::new(move || {
             App::new()
@@ -27,6 +30,7 @@ impl Server {
                         .service(api::auth::login),
                 )
                 .app_data(user_repository.clone())
+                .app_data(jwt_service.clone())
         })
         .bind(config.get_server_configuration().get_address())?
         .run();

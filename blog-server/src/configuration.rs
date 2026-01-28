@@ -5,6 +5,7 @@ use sqlx::postgres::{PgConnectOptions, PgSslMode};
 pub(crate) struct Configuration {
     server: ServerConfiguration,
     database: DatabaseConfiguration,
+    jwt: JwtConfiguration,
 }
 
 impl Configuration {
@@ -31,6 +32,10 @@ impl Configuration {
     }
     pub(crate) fn get_database_configuration(&self) -> &DatabaseConfiguration {
         &self.database
+    }
+
+    pub(crate) fn get_jwt_configuration(&self) -> &JwtConfiguration {
+        &self.jwt
     }
 }
 
@@ -76,5 +81,16 @@ impl DatabaseConfiguration {
             .port(self.port)
             .database(&self.database_name)
             .ssl_mode(ssl_mode)
+    }
+}
+
+#[derive(serde::Deserialize, Clone)]
+pub(crate) struct JwtConfiguration {
+    secret: SecretString,
+}
+
+impl JwtConfiguration {
+    pub(crate) fn get_secret(&self) -> &SecretString {
+        &self.secret
     }
 }
