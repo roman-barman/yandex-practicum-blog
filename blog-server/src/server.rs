@@ -21,7 +21,11 @@ impl Server {
         let server = HttpServer::new(move || {
             App::new()
                 .wrap(TracingLogger::default())
-                .service(web::scope("/api").service(api::auth::register_user))
+                .service(
+                    web::scope("/api")
+                        .service(api::auth::register_user)
+                        .service(api::auth::login),
+                )
                 .app_data(user_repository.clone())
         })
         .bind(config.get_server_configuration().get_address())?
