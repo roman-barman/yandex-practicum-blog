@@ -1,4 +1,4 @@
-use crate::application::auth::RegisterUserError;
+use crate::application::auth::{RegisterUserError, VerifyUserError};
 use actix_web::ResponseError;
 use actix_web::http::header::ContentType;
 use serde::Serialize;
@@ -12,6 +12,8 @@ pub(crate) enum ApiError {
     Conflict(String),
     #[error("internal server error")]
     InternalServerError(String),
+    #[error("unauthorized")]
+    Unauthorized(String),
 }
 
 impl ResponseError for ApiError {
@@ -20,6 +22,7 @@ impl ResponseError for ApiError {
             ApiError::UnprocessableEntity(_) => actix_web::http::StatusCode::UNPROCESSABLE_ENTITY,
             ApiError::InternalServerError(_) => actix_web::http::StatusCode::INTERNAL_SERVER_ERROR,
             ApiError::Conflict(_) => actix_web::http::StatusCode::CONFLICT,
+            ApiError::Unauthorized(_) => actix_web::http::StatusCode::UNAUTHORIZED,
         }
     }
 
@@ -44,6 +47,16 @@ impl From<RegisterUserError> for ApiError {
             RegisterUserError::InvalidUser(error) => ApiError::UnprocessableEntity(error),
             RegisterUserError::Unexpected(error) => ApiError::InternalServerError(error),
             RegisterUserError::UsernameOrEmailExist => ApiError::Conflict(err.to_string()),
+        }
+    }
+}
+
+impl From<VerifyUserError> for ApiError {
+    fn from(err: VerifyUserError) -> Self {
+        match err {
+            VerifyUserError::InvalidUserNameOrPassword(error) => ApiError::Unauthorized(error),
+            VerifyUserError::UserNotFound => ApiError::Unauthorized(err.to_string()),
+            VerifyUserError::Unexpected(error) => ApiError::InternalServerError(error),
         }
     }
 }

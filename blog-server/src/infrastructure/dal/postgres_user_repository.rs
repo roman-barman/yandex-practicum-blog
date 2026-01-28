@@ -1,8 +1,8 @@
 use crate::application::contracts::UserRepository;
 use crate::domain::entities::User;
-use crate::domain::value_objects::{Email, UserName};
+use crate::domain::value_objects::{DateTime, Email, Identification, PasswordHash, UserName};
 use async_trait::async_trait;
-use secrecy::ExposeSecret;
+use secrecy::{ExposeSecret, SecretString};
 use sqlx::PgPool;
 
 pub(crate) struct PostgresUserRepository {
@@ -48,5 +48,25 @@ impl UserRepository for PostgresUserRepository {
         .await?;
 
         Ok(())
+    }
+
+    #[tracing::instrument(name = "Get user from the DB", skip(self))]
+    async fn get(&self, username: &UserName) -> Result<Option<User>, anyhow::Error> {
+        let record = sqlx::query!("SELECT * FROM users WHERE username = $1", username.as_ref())
+            .fetch_optional(&self.pool)
+            .await?;
+
+        match record {
+            None => Ok(None),
+            Some(record) => {
+                let id = Identification::from(record.id);
+                let user_name = UserName::try_from(record.username)?;
+                let email = Email::try_from(record.email)?;
+                let password_hash = PasswordHash::from(SecretString::from(record.password_hash));
+                let created_at = DateTime::from(record.created_at);
+                let user = User::new_with_all_info(id, user_name, email, password_hash, created_at);
+                Ok(Some(user))
+            }
+        }
     }
 }

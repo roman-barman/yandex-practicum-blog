@@ -12,3 +12,9 @@ impl AsRef<chrono::DateTime<chrono::Utc>> for DateTime {
         &self.0
     }
 }
+
+impl From<chrono::DateTime<chrono::Utc>> for DateTime {
+    fn from(value: chrono::DateTime<chrono::Utc>) -> Self {
+        Self(value)
+    }
+}
