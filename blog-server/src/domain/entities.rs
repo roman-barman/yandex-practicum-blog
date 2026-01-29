@@ -1,5 +1,5 @@
-mod blog;
+mod post;
 mod user;
 
-pub(crate) use blog::*;
+pub(crate) use post::*;
 pub(crate) use user::*;

@@ -1,7 +1,7 @@
 use crate::domain::value_objects::{Content, DateTime, Identification, Title};
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct Blog {
+pub(crate) struct Post {
     id: Identification,
     title: Title,
     content: Content,
@@ -10,7 +10,7 @@ pub(crate) struct Blog {
     updated_at: DateTime,
 }
 
-impl Blog {
+impl Post {
     pub(crate) fn new(title: Title, content: Content, author_id: Identification) -> Self {
         Self {
             id: Identification::new(),
