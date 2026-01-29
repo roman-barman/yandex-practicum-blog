@@ -3,6 +3,7 @@ use jsonwebtoken::{DecodingKey, EncodingKey, Header, TokenData, Validation, deco
 use secrecy::{ExposeSecret, SecretString};
 use serde::{Deserialize, Serialize};
 use std::time::SystemTime;
+use uuid::Uuid;
 
 const TOKEN_EXPIRATION_TIME: usize = 60 * 60;
 
@@ -18,7 +19,7 @@ impl JwtService {
     #[tracing::instrument(name = "Generate JWT", skip(self))]
     pub(crate) fn generate_jwt(&self, user: &User) -> anyhow::Result<String> {
         let claims = Claims {
-            sub: user.id().as_ref().to_string(),
+            sub: user.id().as_ref().clone(),
             username: user.username().as_ref().to_string(),
             exp: SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)?
@@ -46,9 +47,15 @@ impl JwtService {
 
 #[derive(Serialize, Deserialize)]
 pub(crate) struct Claims {
-    sub: String,
+    sub: Uuid,
     username: String,
     exp: usize,
+}
+
+impl Claims {
+    pub(crate) fn sub(&self) -> Uuid {
+        self.sub
+    }
 }
 
 #[derive(Debug, thiserror::Error)]

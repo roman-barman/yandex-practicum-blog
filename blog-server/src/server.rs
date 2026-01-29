@@ -35,7 +35,7 @@ impl Server {
                         )
                         .service(
                             web::scope("/posts")
-                                .wrap(from_fn(middleware::jwt::auth_middleware))
+                                .wrap(from_fn(middleware::auth::auth_middleware))
                                 .service(posts::create_post),
                         ),
                 )

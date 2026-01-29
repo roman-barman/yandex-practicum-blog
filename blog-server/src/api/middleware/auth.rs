@@ -4,7 +4,7 @@ use actix_web::body::BoxBody;
 use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::http::StatusCode;
 use actix_web::middleware::Next;
-use actix_web::{Error, web};
+use actix_web::{Error, HttpMessage, web};
 
 pub(crate) async fn auth_middleware(
     req: ServiceRequest,
@@ -31,7 +31,10 @@ pub(crate) async fn auth_middleware(
                                 let claims = jwt_service.decode_jwt(token);
                                 match claims {
                                     Err(_) => Ok(req.into_response(create_unauthorized_response())),
-                                    Ok(_) => next.call(req).await,
+                                    Ok(claims) => {
+                                        req.extensions_mut().insert(claims.sub());
+                                        next.call(req).await
+                                    }
                                 }
                             }
                         }
