@@ -15,13 +15,14 @@ tracing-log = "0.2"
 tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter", "json", "chrono"] }
 secrecy = { version = "0.10", features = ["serde"] }
 uuid = { version = "1", features = ["v4", "serde"] }
-chrono = "0.4"
+chrono = { version = "0.4", features = ["serde"] }
 thiserror = "2"
 regex = "1"
 argon2 = { version = "0.5", features = ["std"] }
 rand_core = "0.9"
 async-trait = "0.1"
 jsonwebtoken = { version = "10", features = ["rust_crypto"] }
+html-escape = "0.2"
 
 [dependencies.sqlx]
 version = "0.8"

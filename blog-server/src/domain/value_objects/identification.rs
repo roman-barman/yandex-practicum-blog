@@ -1,6 +1,6 @@
 use uuid::Uuid;
 
-#[derive(Debug, PartialEq, Default)]
+#[derive(Debug, PartialEq, Clone)]
 pub(crate) struct Identification(Uuid);
 
 impl Identification {

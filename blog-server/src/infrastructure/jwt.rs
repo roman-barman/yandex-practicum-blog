@@ -19,7 +19,7 @@ impl JwtService {
     #[tracing::instrument(name = "Generate JWT", skip(self))]
     pub(crate) fn generate_jwt(&self, user: &User) -> anyhow::Result<String> {
         let claims = Claims {
-            sub: user.id().as_ref().clone(),
+            sub: *user.id().as_ref(),
             username: user.username().as_ref().to_string(),
             exp: SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)?

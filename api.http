@@ -24,7 +24,12 @@ Content-Type: application/json
 ### Register a new post
 POST http://localhost:3000/api/posts
 Content-Type: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhMjVmZjYzNC1jNDhlLTQ4YzktOGYxNS1mMTljZDFjMjY4ODQiLCJ1c2VybmFtZSI6InRlc3QxMjMiLCJleHAiOjE3Njk3MDUzNjZ9.dyptrjgDtEyNjJTjdQpLryk-EnM8oVBab_-efa5sPp0
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhMjVmZjYzNC1jNDhlLTQ4YzktOGYxNS1mMTljZDFjMjY4ODQiLCJ1c2VybmFtZSI6InRlc3QxMjMiLCJleHAiOjE3Njk3MTMzOTd9.nUHa_--nzK4RO41DmNUBRloI0dB3-8AumBLAx-ZU1ZE
+
+{
+  "title": "Hello world",
+  "content": "content"
+}
 
 ###
 

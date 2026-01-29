@@ -3,6 +3,12 @@ const TITLE_MAX_LENGTH: usize = 100;
 #[derive(Debug, PartialEq)]
 pub(crate) struct Title(String);
 
+impl AsRef<str> for Title {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
+
 impl TryFrom<String> for Title {
     type Error = TitleError;
 

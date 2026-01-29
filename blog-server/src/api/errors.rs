@@ -1,4 +1,5 @@
 use crate::application::auth::{RegisterUserError, VerifyUserError};
+use crate::application::blog::CreatePostError;
 use actix_web::ResponseError;
 use actix_web::http::header::ContentType;
 use serde::Serialize;
@@ -62,6 +63,16 @@ impl From<VerifyUserError> for ApiError {
             VerifyUserError::InvalidUserNameOrPassword(error) => ApiError::Unauthorized(error),
             VerifyUserError::UserNotFound => ApiError::Unauthorized(err.to_string()),
             VerifyUserError::Unexpected(error) => ApiError::InternalServerError(error),
+        }
+    }
+}
+
+impl From<CreatePostError> for ApiError {
+    fn from(err: CreatePostError) -> Self {
+        match err {
+            CreatePostError::InvalidTitle(error) => {
+                ApiError::UnprocessableEntity(error.to_string())
+            }
         }
     }
 }
