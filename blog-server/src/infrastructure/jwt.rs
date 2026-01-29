@@ -1,7 +1,7 @@
 use crate::domain::entities::User;
-use jsonwebtoken::{EncodingKey, Header, encode};
+use jsonwebtoken::{DecodingKey, EncodingKey, Header, TokenData, Validation, decode, encode};
 use secrecy::{ExposeSecret, SecretString};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::time::SystemTime;
 
 const TOKEN_EXPIRATION_TIME: usize = 60 * 60;
@@ -32,11 +32,27 @@ impl JwtService {
         )?;
         Ok(token)
     }
+
+    #[tracing::instrument(name = "Decode JWT", skip(self, token))]
+    pub(crate) fn decode_jwt(&self, token: &str) -> Result<Claims, JwtDecodeError> {
+        let token_data: TokenData<Claims> = decode(
+            token,
+            &DecodingKey::from_secret(self.secret.expose_secret().as_bytes()),
+            &Validation::default(),
+        )?;
+        Ok(token_data.claims)
+    }
 }
 
-#[derive(Serialize)]
-struct Claims {
+#[derive(Serialize, Deserialize)]
+pub(crate) struct Claims {
     sub: String,
     username: String,
     exp: usize,
+}
+
+#[derive(Debug, thiserror::Error)]
+pub(crate) enum JwtDecodeError {
+    #[error("unauthorized")]
+    Unauthorized(#[from] jsonwebtoken::errors::Error),
 }

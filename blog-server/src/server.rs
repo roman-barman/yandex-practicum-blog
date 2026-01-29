@@ -1,7 +1,9 @@
-use crate::api;
+use crate::api::http_handlers::{auth, posts};
+use crate::api::middleware;
 use crate::application::contracts::UserRepository;
 use crate::configuration::Configuration;
 use crate::infrastructure::{JwtService, PostgresUserRepository};
+use actix_web::middleware::from_fn;
 use actix_web::{App, HttpServer, web};
 use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
@@ -26,8 +28,16 @@ impl Server {
                 .wrap(TracingLogger::default())
                 .service(
                     web::scope("/api")
-                        .service(api::auth::register_user)
-                        .service(api::auth::login),
+                        .service(
+                            web::scope("/auth")
+                                .service(auth::register_user)
+                                .service(auth::login),
+                        )
+                        .service(
+                            web::scope("/posts")
+                                .wrap(from_fn(middleware::jwt::auth_middleware))
+                                .service(posts::create_post),
+                        ),
                 )
                 .app_data(user_repository.clone())
                 .app_data(jwt_service.clone())

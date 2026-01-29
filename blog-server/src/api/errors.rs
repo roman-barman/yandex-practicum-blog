@@ -28,12 +28,17 @@ impl ResponseError for ApiError {
 
     fn error_response(&self) -> actix_web::HttpResponse {
         error!("Error: {:?}", self);
-        actix_web::HttpResponse::build(self.status_code())
-            .insert_header(ContentType::json())
-            .json(ErrorResponse {
-                error: self.to_string(),
-            })
+        create_error_response(self.status_code(), self.to_string())
     }
+}
+
+pub(crate) fn create_error_response(
+    status_code: actix_web::http::StatusCode,
+    error: String,
+) -> actix_web::HttpResponse {
+    actix_web::HttpResponse::build(status_code)
+        .insert_header(ContentType::json())
+        .json(ErrorResponse { error })
 }
 
 #[derive(Serialize)]

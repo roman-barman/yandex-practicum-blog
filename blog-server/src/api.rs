@@ -1,4 +1,3 @@
 mod errors;
-mod http_handlers;
-
-pub(crate) use http_handlers::*;
+pub(crate) mod http_handlers;
+pub(crate) mod middleware;

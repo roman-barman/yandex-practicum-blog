@@ -4,7 +4,7 @@ use crate::application::contracts::UserRepository;
 use actix_web::{HttpResponse, post, web};
 use std::sync::Arc;
 
-#[post("/auth/register")]
+#[post("/register")]
 #[tracing::instrument(name = "Register a new user", skip(users_repo))]
 pub(crate) async fn register_user(
     request: web::Json<RegisterUserCommand>,

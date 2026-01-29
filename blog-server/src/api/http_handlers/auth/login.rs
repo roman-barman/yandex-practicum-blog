@@ -6,7 +6,7 @@ use actix_web::{HttpResponse, post, web};
 use std::sync::Arc;
 use uuid::Uuid;
 
-#[post("/auth/login")]
+#[post("/login")]
 #[tracing::instrument(name = "Login user", skip(users_repo, jwt_service))]
 pub(crate) async fn login(
     request: web::Json<VerifyUserCommand>,
