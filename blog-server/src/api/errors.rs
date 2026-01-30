@@ -73,6 +73,7 @@ impl From<CreatePostError> for ApiError {
             CreatePostError::InvalidTitle(error) => {
                 ApiError::UnprocessableEntity(error.to_string())
             }
+            CreatePostError::Unexpected(error) => ApiError::InternalServerError(error),
         }
     }
 }

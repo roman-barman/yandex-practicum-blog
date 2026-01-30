@@ -4,13 +4,14 @@ use crate::domain::value_objects::{DateTime, Email, Identification, PasswordHash
 use async_trait::async_trait;
 use secrecy::{ExposeSecret, SecretString};
 use sqlx::PgPool;
+use std::sync::Arc;
 
 pub(crate) struct PostgresUserRepository {
-    pool: PgPool,
+    pool: Arc<PgPool>,
 }
 
 impl PostgresUserRepository {
-    pub(crate) fn new(pool: PgPool) -> Self {
+    pub(crate) fn new(pool: Arc<PgPool>) -> Self {
         Self { pool }
     }
 }
@@ -24,7 +25,7 @@ impl UserRepository for PostgresUserRepository {
             username.as_ref(),
             email.as_ref(),
         )
-        .fetch_one(&self.pool)
+        .fetch_one(self.pool.as_ref())
         .await?;
 
         Ok(is_exists.is_some_and(|x| x))
@@ -44,7 +45,7 @@ impl UserRepository for PostgresUserRepository {
             user.password_hash().as_ref().expose_secret(),
             user.created_at().as_ref(),
         )
-        .execute(&self.pool)
+        .execute(self.pool.as_ref())
         .await?;
 
         Ok(())
@@ -53,7 +54,7 @@ impl UserRepository for PostgresUserRepository {
     #[tracing::instrument(name = "Get user from the DB", skip(self))]
     async fn get(&self, username: &UserName) -> Result<Option<User>, anyhow::Error> {
         let record = sqlx::query!("SELECT * FROM users WHERE username = $1", username.as_ref())
-            .fetch_optional(&self.pool)
+            .fetch_optional(self.pool.as_ref())
             .await?;
 
         match record {
