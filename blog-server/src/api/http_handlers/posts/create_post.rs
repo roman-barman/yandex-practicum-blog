@@ -1,10 +1,10 @@
 use crate::api::errors::ApiError;
 use crate::api::extractors::AuthenticatedUser;
+use crate::api::http_handlers::posts::Response;
 use crate::application::blog::{CreatePostCommand, create_post_handler};
 use crate::application::contracts::PostRepository;
 use actix_web::{HttpResponse, post, web};
 use std::sync::Arc;
-use uuid::Uuid;
 
 #[post("")]
 #[tracing::instrument(name = "Create post", skip(post_repo))]
@@ -13,26 +13,8 @@ pub(crate) async fn create_post(
     request: web::Json<CreatePostCommand>,
     post_repo: web::Data<Arc<dyn PostRepository>>,
 ) -> Result<HttpResponse, ApiError> {
-    let blog = create_post_handler(user.into(), request.into_inner(), &post_repo).await?;
-    let response = Response {
-        id: blog.id().as_ref(),
-        title: blog.title().as_ref(),
-        content: blog.content().as_ref(),
-        user_id: blog.author_id().as_ref(),
-        created_at: blog.created_at().as_ref(),
-        updated_at: blog.updated_at().as_ref(),
-    };
+    let post = create_post_handler(user.into(), request.into_inner(), &post_repo).await?;
     Ok(HttpResponse::Created()
-        .append_header(("Location", format!("/api/posts/{}", blog.id().as_ref())))
-        .json(response))
-}
-
-#[derive(serde::Serialize)]
-struct Response<'a> {
-    id: &'a Uuid,
-    title: &'a str,
-    content: &'a str,
-    user_id: &'a Uuid,
-    created_at: &'a chrono::DateTime<chrono::Utc>,
-    updated_at: &'a chrono::DateTime<chrono::Utc>,
+        .append_header(("Location", format!("/api/posts/{}", post.id().as_ref())))
+        .json(Response::from(&post)))
 }

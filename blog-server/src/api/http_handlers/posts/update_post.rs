@@ -1,5 +1,6 @@
 use crate::api::errors::ApiError;
 use crate::api::extractors::AuthenticatedUser;
+use crate::api::http_handlers::posts::response::Response;
 use crate::application::blog::{UpdatePostCommand, update_post_handler};
 use crate::application::contracts::PostRepository;
 use crate::domain::value_objects::Identification;
@@ -22,23 +23,5 @@ pub(crate) async fn update_post(
         &post_repo,
     )
     .await?;
-    let response = Response {
-        id: post.id().as_ref(),
-        title: post.title().as_ref(),
-        content: post.content().as_ref(),
-        user_id: post.author_id().as_ref(),
-        created_at: post.created_at().as_ref(),
-        updated_at: post.updated_at().as_ref(),
-    };
-    Ok(HttpResponse::Ok().json(response))
-}
-
-#[derive(serde::Serialize)]
-struct Response<'a> {
-    id: &'a Uuid,
-    title: &'a str,
-    content: &'a str,
-    user_id: &'a Uuid,
-    created_at: &'a chrono::DateTime<chrono::Utc>,
-    updated_at: &'a chrono::DateTime<chrono::Utc>,
+    Ok(HttpResponse::Ok().json(Response::from(&post)))
 }
