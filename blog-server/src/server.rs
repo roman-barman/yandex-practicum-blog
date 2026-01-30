@@ -41,7 +41,8 @@ impl Server {
                             web::scope("/posts")
                                 .wrap(from_fn(middleware::auth::auth_middleware))
                                 .service(posts::create_post)
-                                .service(posts::update_post),
+                                .service(posts::update_post)
+                                .service(posts::delete_post),
                         ),
                 )
                 .app_data(user_repository.clone())

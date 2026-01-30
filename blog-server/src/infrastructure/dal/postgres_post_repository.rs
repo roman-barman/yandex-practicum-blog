@@ -67,4 +67,12 @@ impl PostRepository for PostgresPostRepository {
             }
         }
     }
+
+    #[tracing::instrument(name = "Delete post from the DB", skip(self))]
+    async fn delete(&self, id: &Identification) -> Result<(), anyhow::Error> {
+        sqlx::query!("DELETE FROM posts WHERE id = $1", id.as_ref())
+            .execute(self.pool.as_ref())
+            .await?;
+        Ok(())
+    }
 }

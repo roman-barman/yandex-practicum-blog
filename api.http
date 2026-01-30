@@ -10,7 +10,7 @@ Content-Type: application/json
 
 ###
 
-### Register a new user
+### Login
 POST http://localhost:3000/api/auth/login
 Content-Type: application/json
 
@@ -53,3 +53,9 @@ Authorization: Bearer {{auth_token}}
 
 ###
 
+### Update post
+DELETE http://localhost:3000/api/posts/{{post_id}}
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+###

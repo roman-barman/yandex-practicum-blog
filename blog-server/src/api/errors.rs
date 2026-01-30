@@ -1,5 +1,5 @@
 use crate::application::auth::{RegisterUserError, VerifyUserError};
-use crate::application::blog::{CreatePostError, UpdatePostError};
+use crate::application::blog::{CreatePostError, DeletePostError, UpdatePostError};
 use actix_web::ResponseError;
 use actix_web::http::header::ContentType;
 use serde::Serialize;
@@ -93,6 +93,16 @@ impl From<UpdatePostError> for ApiError {
             }
             UpdatePostError::NotFound => ApiError::NotFound(err.to_string()),
             UpdatePostError::NotAllowed => ApiError::Forbidden(err.to_string()),
+        }
+    }
+}
+
+impl From<DeletePostError> for ApiError {
+    fn from(err: DeletePostError) -> Self {
+        match err {
+            DeletePostError::Unexpected(error) => ApiError::InternalServerError(error),
+            DeletePostError::NotFound => ApiError::NotFound(err.to_string()),
+            DeletePostError::NotAllowed => ApiError::Forbidden(err.to_string()),
         }
     }
 }

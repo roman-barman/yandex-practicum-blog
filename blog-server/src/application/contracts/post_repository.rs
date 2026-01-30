@@ -7,4 +7,5 @@ pub trait PostRepository: Send + Sync {
     async fn create(&self, post: &Post) -> Result<(), anyhow::Error>;
     async fn update(&self, post: &Post) -> Result<(), anyhow::Error>;
     async fn get(&self, id: &Identification) -> Result<Option<Post>, anyhow::Error>;
+    async fn delete(&self, id: &Identification) -> Result<(), anyhow::Error>;
 }
