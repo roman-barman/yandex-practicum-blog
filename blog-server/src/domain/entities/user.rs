@@ -20,7 +20,7 @@ impl User {
         }
     }
 
-    pub(crate) fn new_with_all_info(
+    pub(crate) fn restore(
         id: Identification,
         username: UserName,
         email: Email,

@@ -10,9 +10,9 @@ pub(crate) struct AuthenticatedUser {
     id: Identification,
 }
 
-impl AuthenticatedUser {
-    pub fn id(&self) -> &Identification {
-        &self.id
+impl From<AuthenticatedUser> for Identification {
+    fn from(value: AuthenticatedUser) -> Self {
+        value.id
     }
 }
 

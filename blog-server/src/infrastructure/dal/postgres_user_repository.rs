@@ -65,7 +65,7 @@ impl UserRepository for PostgresUserRepository {
                 let email = Email::try_from(record.email)?;
                 let password_hash = PasswordHash::from(SecretString::from(record.password_hash));
                 let created_at = DateTime::from(record.created_at);
-                let user = User::new_with_all_info(id, user_name, email, password_hash, created_at);
+                let user = User::restore(id, user_name, email, password_hash, created_at);
                 Ok(Some(user))
             }
         }

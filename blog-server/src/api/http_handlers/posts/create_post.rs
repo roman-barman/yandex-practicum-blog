@@ -13,7 +13,7 @@ pub(crate) async fn create_post(
     request: web::Json<CreatePostCommand>,
     post_repo: web::Data<Arc<dyn PostRepository>>,
 ) -> Result<HttpResponse, ApiError> {
-    let blog = create_post_handler(user.id().clone(), request.into_inner(), &post_repo).await?;
+    let blog = create_post_handler(user.into(), request.into_inner(), &post_repo).await?;
     let response = Response {
         id: blog.id().as_ref(),
         title: blog.title().as_ref(),

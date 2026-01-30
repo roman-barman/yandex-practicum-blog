@@ -1,5 +1,5 @@
 use crate::application::auth::{RegisterUserError, VerifyUserError};
-use crate::application::blog::CreatePostError;
+use crate::application::blog::{CreatePostError, UpdatePostError};
 use actix_web::ResponseError;
 use actix_web::http::header::ContentType;
 use serde::Serialize;
@@ -15,6 +15,10 @@ pub(crate) enum ApiError {
     InternalServerError(String),
     #[error("unauthorized")]
     Unauthorized(String),
+    #[error("forbidden: {0}")]
+    Forbidden(String),
+    #[error("not found: {0}")]
+    NotFound(String),
 }
 
 impl ResponseError for ApiError {
@@ -24,6 +28,8 @@ impl ResponseError for ApiError {
             ApiError::InternalServerError(_) => actix_web::http::StatusCode::INTERNAL_SERVER_ERROR,
             ApiError::Conflict(_) => actix_web::http::StatusCode::CONFLICT,
             ApiError::Unauthorized(_) => actix_web::http::StatusCode::UNAUTHORIZED,
+            ApiError::Forbidden(_) => actix_web::http::StatusCode::FORBIDDEN,
+            ApiError::NotFound(_) => actix_web::http::StatusCode::NOT_FOUND,
         }
     }
 
@@ -74,6 +80,19 @@ impl From<CreatePostError> for ApiError {
                 ApiError::UnprocessableEntity(error.to_string())
             }
             CreatePostError::Unexpected(error) => ApiError::InternalServerError(error),
+        }
+    }
+}
+
+impl From<UpdatePostError> for ApiError {
+    fn from(err: UpdatePostError) -> Self {
+        match err {
+            UpdatePostError::Unexpected(error) => ApiError::InternalServerError(error),
+            UpdatePostError::InvalidTitle(error) => {
+                ApiError::UnprocessableEntity(error.to_string())
+            }
+            UpdatePostError::NotFound => ApiError::NotFound(err.to_string()),
+            UpdatePostError::NotAllowed => ApiError::Forbidden(err.to_string()),
         }
     }
 }

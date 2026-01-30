@@ -22,6 +22,30 @@ impl Post {
         }
     }
 
+    pub(crate) fn restore(
+        id: Identification,
+        title: Title,
+        content: Content,
+        author_id: Identification,
+        created_at: DateTime,
+        updated_at: DateTime,
+    ) -> Self {
+        Self {
+            id,
+            title,
+            content,
+            author_id,
+            created_at,
+            updated_at,
+        }
+    }
+
+    pub(crate) fn update(&mut self, title: Title, content: Content) {
+        self.title = title;
+        self.content = content;
+        self.updated_at = DateTime::now();
+    }
+
     pub(crate) fn id(&self) -> &Identification {
         &self.id
     }
