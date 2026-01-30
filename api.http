@@ -59,3 +59,9 @@ Content-Type: application/json
 Authorization: Bearer {{auth_token}}
 
 ###
+
+### Get post
+GET http://localhost:3000/api/posts/{{post_id}}
+Content-Type: application/json
+
+###

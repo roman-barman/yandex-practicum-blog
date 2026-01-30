@@ -8,6 +8,7 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 #[delete("/{id}")]
+#[tracing::instrument(name = "Delete post", skip(post_repo))]
 pub(crate) async fn delete_post(
     path: web::Path<Uuid>,
     user: AuthenticatedUser,

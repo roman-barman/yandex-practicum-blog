@@ -37,6 +37,7 @@ impl Server {
                                 .service(auth::register_user)
                                 .service(auth::login),
                         )
+                        .service(posts::get_post)
                         .service(
                             web::scope("/posts")
                                 .wrap(from_fn(middleware::auth::auth_middleware))
