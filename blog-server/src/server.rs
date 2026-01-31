@@ -38,6 +38,7 @@ impl Server {
                                 .service(auth::login),
                         )
                         .service(posts::get_post)
+                        .service(posts::get_post_list)
                         .service(
                             web::scope("/posts")
                                 .wrap(from_fn(middleware::auth::auth_middleware))

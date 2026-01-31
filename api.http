@@ -65,3 +65,10 @@ GET http://localhost:3000/api/posts/{{post_id}}
 Content-Type: application/json
 
 ###
+
+### Get post list
+GET http://localhost:3000/api/posts?limit=2&offset=1
+Content-Type: application/json
+
+###
+

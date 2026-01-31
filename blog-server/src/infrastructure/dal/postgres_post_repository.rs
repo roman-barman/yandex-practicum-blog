@@ -75,4 +75,46 @@ impl PostRepository for PostgresPostRepository {
             .await?;
         Ok(())
     }
+
+    #[tracing::instrument(name = "Get posts list from the DB", skip(self))]
+    async fn list(&self, limit: usize, offset: usize) -> Result<(Vec<Post>, usize), anyhow::Error> {
+        let mut tx = self.pool.begin().await?;
+
+        sqlx::query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+            .execute(&mut *tx)
+            .await?;
+
+        let count = sqlx::query!("SELECT count(*) as count FROM posts")
+            .fetch_one(self.pool.as_ref())
+            .await?
+            .count
+            .unwrap_or(0);
+
+        let records = sqlx::query!(
+            "SELECT * FROM posts ORDER BY created_at LIMIT $1 OFFSET $2",
+            limit as i64,
+            offset as i64
+        )
+        .fetch_all(self.pool.as_ref())
+        .await?;
+
+        tx.commit().await?;
+
+        let mut posts = Vec::with_capacity(records.len());
+
+        for record in records {
+            let id = Identification::from(record.id);
+            let title = Title::try_from(record.title)?;
+            let content = Content::from(record.content);
+            let author_id = Identification::from(record.author_id);
+            let created_at = DateTime::from(record.created_at);
+            let updated_at = DateTime::from(record.updated_at);
+
+            posts.push(Post::restore(
+                id, title, content, author_id, created_at, updated_at,
+            ));
+        }
+
+        Ok((posts, count as usize))
+    }
 }

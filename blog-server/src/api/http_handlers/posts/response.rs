@@ -2,7 +2,7 @@ use crate::domain::entities::Post;
 use uuid::Uuid;
 
 #[derive(serde::Serialize)]
-pub(crate) struct Response<'a> {
+pub(crate) struct PostResponse<'a> {
     id: &'a Uuid,
     title: &'a str,
     content: &'a str,
@@ -11,8 +11,8 @@ pub(crate) struct Response<'a> {
     updated_at: &'a chrono::DateTime<chrono::Utc>,
 }
 
-impl<'a> Response<'a> {
-    pub(crate) fn from(post: &'a Post) -> Response<'a> {
+impl<'a> PostResponse<'a> {
+    pub(crate) fn from(post: &'a Post) -> PostResponse<'a> {
         Self {
             id: post.id().as_ref(),
             title: post.title().as_ref(),

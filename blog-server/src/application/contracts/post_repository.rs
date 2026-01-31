@@ -8,4 +8,5 @@ pub trait PostRepository: Send + Sync {
     async fn update(&self, post: &Post) -> Result<(), anyhow::Error>;
     async fn get(&self, id: &Identification) -> Result<Option<Post>, anyhow::Error>;
     async fn delete(&self, id: &Identification) -> Result<(), anyhow::Error>;
+    async fn list(&self, limit: usize, offset: usize) -> Result<(Vec<Post>, usize), anyhow::Error>;
 }
