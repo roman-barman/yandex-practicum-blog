@@ -35,6 +35,12 @@ pub(crate) struct VerifyUserCommand {
     password: SecretString,
 }
 
+impl VerifyUserCommand {
+    pub(crate) fn new(username: String, password: SecretString) -> Self {
+        Self { username, password }
+    }
+}
+
 #[derive(Debug, thiserror::Error)]
 pub(crate) enum VerifyUserError {
     #[error("invalid user username or password: {0}")]

@@ -11,7 +11,7 @@ use uuid::Uuid;
 pub(crate) async fn login(
     request: web::Json<VerifyUserCommand>,
     users_repo: web::Data<Arc<dyn UserRepository>>,
-    jwt_service: web::Data<JwtService>,
+    jwt_service: web::Data<Arc<JwtService>>,
 ) -> Result<HttpResponse, ApiError> {
     let user = verify_user_handler(request.0, users_repo.get_ref()).await?;
     let token = jwt_service

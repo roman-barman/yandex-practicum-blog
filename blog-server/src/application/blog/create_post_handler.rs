@@ -26,6 +26,12 @@ pub(crate) struct CreatePostCommand {
     content: String,
 }
 
+impl CreatePostCommand {
+    pub(crate) fn new(title: String, content: String) -> Self {
+        Self { title, content }
+    }
+}
+
 #[derive(Debug, thiserror::Error, PartialEq)]
 pub(crate) enum CreatePostError {
     #[error("invalid title: {0}")]

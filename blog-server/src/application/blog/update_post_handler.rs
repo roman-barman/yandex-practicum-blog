@@ -38,6 +38,12 @@ pub(crate) struct UpdatePostCommand {
     content: String,
 }
 
+impl UpdatePostCommand {
+    pub(crate) fn new(title: String, content: String) -> Self {
+        Self { title, content }
+    }
+}
+
 #[derive(Debug, thiserror::Error, PartialEq)]
 pub(crate) enum UpdatePostError {
     #[error("post not found")]

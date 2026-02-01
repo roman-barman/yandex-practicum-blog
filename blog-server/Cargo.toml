@@ -23,6 +23,12 @@ rand_core = "0.9"
 async-trait = "0.1"
 jsonwebtoken = { version = "10", features = ["rust_crypto"] }
 html-escape = "0.2"
+tonic = "0.14"
+prost = "0.14"
+tonic-prost = "0.14"
+prost-types = "0.14"
+tonic-reflection = "0.14"
+tower-http = { version = "0.6", features = ["trace"] }
 
 [dependencies.sqlx]
 version = "0.8"
@@ -35,3 +41,6 @@ features = [
     "chrono",
     "migrate"
 ]
+
+[build-dependencies]
+tonic-prost-build = "0.14"

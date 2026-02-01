@@ -49,6 +49,16 @@ pub(crate) struct RegisterUserCommand {
     email: String,
 }
 
+impl RegisterUserCommand {
+    pub(crate) fn new(username: String, password: SecretString, email: String) -> Self {
+        Self {
+            username,
+            password,
+            email,
+        }
+    }
+}
+
 #[derive(Debug, thiserror::Error)]
 pub(crate) enum RegisterUserError {
     #[error("invalid user: {0}")]

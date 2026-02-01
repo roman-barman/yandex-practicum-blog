@@ -5,6 +5,7 @@ use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::http::StatusCode;
 use actix_web::middleware::Next;
 use actix_web::{Error, HttpMessage, web};
+use std::sync::Arc;
 
 pub(crate) async fn auth_middleware(
     req: ServiceRequest,
@@ -21,7 +22,7 @@ pub(crate) async fn auth_middleware(
                 Ok(header_value) => {
                     if header_value.starts_with("Bearer ") {
                         let token = header_value.split(" ").collect::<Vec<&str>>()[1];
-                        let jwt_service = req.app_data::<web::Data<JwtService>>();
+                        let jwt_service = req.app_data::<web::Data<Arc<JwtService>>>();
                         match jwt_service {
                             None => {
                                 tracing::error!("JwtService not found in request data");
