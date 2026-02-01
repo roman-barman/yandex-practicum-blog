@@ -43,50 +43,47 @@ impl Server {
             Arc::clone(&jwt_service),
         );
 
-        let addr = "127.0.0.1:50051".parse()?;
         let reflection_service = tonic_reflection::server::Builder::configure()
             .register_encoded_file_descriptor_set(proto::FILE_DESCRIPTOR_SET)
             .build_v1()?;
+        let grpc_address = config.get_server_configuration().get_grpc_address()?;
         let grpc_server = tokio::spawn(async move {
-            println!("Starting GRPC server on {}", addr);
-            let result = tonic::transport::Server::builder()
+            tonic::transport::Server::builder()
                 .layer(TraceLayer::new_for_grpc())
                 .add_service(BlogServiceServer::new(blog_service))
                 .add_service(reflection_service)
-                .serve(addr)
-                .await;
-
-            println!("GRPC {:?}", result);
-
-            result
+                .serve(grpc_address)
+                .await
         });
 
-        let http_server = tokio::spawn(HttpServer::new(move || {
-            App::new()
-                .wrap(TracingLogger::default())
-                .service(
-                    web::scope("/api")
-                        .service(
-                            web::scope("/auth")
-                                .service(auth::register_user)
-                                .service(auth::login),
-                        )
-                        .service(posts::get_post)
-                        .service(posts::get_post_list)
-                        .service(
-                            web::scope("/posts")
-                                .wrap(from_fn(middleware::auth::auth_middleware))
-                                .service(posts::create_post)
-                                .service(posts::update_post)
-                                .service(posts::delete_post),
-                        ),
-                )
-                .app_data(user_repository_data.clone())
-                .app_data(post_repository_data.clone())
-                .app_data(jwt_service_data.clone())
-        })
-        .bind(config.get_server_configuration().get_address())?
-        .run());
+        let http_server = tokio::spawn(
+            HttpServer::new(move || {
+                App::new()
+                    .wrap(TracingLogger::default())
+                    .service(
+                        web::scope("/api")
+                            .service(
+                                web::scope("/auth")
+                                    .service(auth::register_user)
+                                    .service(auth::login),
+                            )
+                            .service(posts::get_post)
+                            .service(posts::get_post_list)
+                            .service(
+                                web::scope("/posts")
+                                    .wrap(from_fn(middleware::auth::auth_middleware))
+                                    .service(posts::create_post)
+                                    .service(posts::update_post)
+                                    .service(posts::delete_post),
+                            ),
+                    )
+                    .app_data(user_repository_data.clone())
+                    .app_data(post_repository_data.clone())
+                    .app_data(jwt_service_data.clone())
+            })
+            .bind(config.get_server_configuration().get_http_address())?
+            .run(),
+        );
         Ok(Self {
             http_server,
             grpc_server,

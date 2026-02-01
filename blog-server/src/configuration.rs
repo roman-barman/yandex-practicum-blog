@@ -1,5 +1,6 @@
 use secrecy::{ExposeSecret, SecretString};
 use sqlx::postgres::{PgConnectOptions, PgSslMode};
+use std::net::{SocketAddr, SocketAddrV4};
 
 #[derive(serde::Deserialize, Clone)]
 pub(crate) struct Configuration {
@@ -42,13 +43,21 @@ impl Configuration {
 #[derive(serde::Deserialize, Clone)]
 pub(crate) struct ServerConfiguration {
     host: String,
-    port: u16,
+    http_port: u16,
+    grpc_port: u16,
     log_level: String,
 }
 
 impl ServerConfiguration {
-    pub(crate) fn get_address(&self) -> (&str, u16) {
-        (self.host.as_str(), self.port)
+    pub(crate) fn get_http_address(&self) -> (&str, u16) {
+        (self.host.as_str(), self.http_port)
+    }
+
+    pub(crate) fn get_grpc_address(&self) -> Result<SocketAddr, std::net::AddrParseError> {
+        Ok(SocketAddr::V4(SocketAddrV4::new(
+            self.host.parse()?,
+            self.grpc_port,
+        )))
     }
 
     pub(crate) fn get_log_level(&self) -> &str {

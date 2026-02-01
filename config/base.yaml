@@ -1,5 +1,6 @@
 server:
-  port: 3000
+  http_port: 3000
+  grpc_port: 50051
   host: 127.0.0.1
   log_level: info
 database:
