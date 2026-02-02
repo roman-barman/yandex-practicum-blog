@@ -1,5 +1,6 @@
-use crate::api::grpc_handlers::blog::blog_service_server::BlogServiceServer;
-use crate::api::grpc_handlers::blog_service::GrpcBlogService;
+use crate::api::grpc::blog::blog_service_server::BlogServiceServer;
+use crate::api::grpc::grpc_handlers::blog_service::GrpcBlogService;
+use crate::api::grpc::proto;
 use crate::api::http::http_handlers::{auth, posts};
 use crate::api::http::middleware;
 use crate::application::contracts::{PostRepository, UserRepository};
@@ -32,25 +33,8 @@ impl Server {
             config.get_jwt_configuration().get_secret().clone(),
         ));
 
-        let blog_service = GrpcBlogService::new(
-            Arc::clone(&user_repository),
-            Arc::clone(&post_repository),
-            Arc::clone(&jwt_service),
-        );
-
-        let reflection_service = tonic_reflection::server::Builder::configure()
-            .register_encoded_file_descriptor_set(proto::FILE_DESCRIPTOR_SET)
-            .build_v1()?;
-        let grpc_address = config.get_server_configuration().get_grpc_address()?;
-        let grpc_server = tokio::spawn(async move {
-            tonic::transport::Server::builder()
-                .layer(TraceLayer::new_for_grpc())
-                .add_service(BlogServiceServer::new(blog_service))
-                .add_service(reflection_service)
-                .serve(grpc_address)
-                .await
-        });
-
+        let grpc_server =
+            run_grpc_server(&config, &user_repository, &post_repository, &jwt_service)?;
         let http_server =
             run_http_server(&config, &user_repository, &post_repository, &jwt_service)?;
         Ok(Self {
@@ -73,6 +57,33 @@ impl Server {
     }
 }
 
+fn run_grpc_server(
+    config: &Configuration,
+    user_repository: &Arc<dyn UserRepository>,
+    post_repository: &Arc<dyn PostRepository>,
+    jwt_service: &Arc<JwtService>,
+) -> anyhow::Result<JoinHandle<Result<(), tonic::transport::Error>>> {
+    let grpc_address = config.get_server_configuration().get_grpc_address()?;
+    let reflection_service = tonic_reflection::server::Builder::configure()
+        .register_encoded_file_descriptor_set(proto::FILE_DESCRIPTOR_SET)
+        .build_v1()?;
+
+    let blog_service = GrpcBlogService::new(
+        Arc::clone(user_repository),
+        Arc::clone(post_repository),
+        Arc::clone(jwt_service),
+    );
+
+    Ok(tokio::spawn(async move {
+        tonic::transport::Server::builder()
+            .layer(TraceLayer::new_for_grpc())
+            .add_service(BlogServiceServer::new(blog_service))
+            .add_service(reflection_service)
+            .serve(grpc_address)
+            .await
+    }))
+}
+
 fn run_http_server(
     config: &Configuration,
     user_repository: &Arc<dyn UserRepository>,
@@ -80,10 +91,10 @@ fn run_http_server(
     jwt_service: &Arc<JwtService>,
 ) -> anyhow::Result<JoinHandle<std::io::Result<()>>> {
     let user_repository_data: web::Data<Arc<dyn UserRepository>> =
-        web::Data::new(Arc::clone(&user_repository));
+        web::Data::new(Arc::clone(user_repository));
     let post_repository_data: web::Data<Arc<dyn PostRepository>> =
-        web::Data::new(Arc::clone(&post_repository));
-    let jwt_service_data = web::Data::new(Arc::clone(&jwt_service));
+        web::Data::new(Arc::clone(post_repository));
+    let jwt_service_data = web::Data::new(Arc::clone(jwt_service));
 
     let server = HttpServer::new(move || {
         App::new()
@@ -113,9 +124,4 @@ fn run_http_server(
     .run();
 
     Ok(tokio::spawn(server))
-}
-
-pub mod proto {
-    pub(crate) const FILE_DESCRIPTOR_SET: &[u8] =
-        tonic::include_file_descriptor_set!("blog_descriptor");
 }

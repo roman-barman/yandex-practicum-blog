@@ -1,2 +1,2 @@
-pub(crate) mod grpc_handlers;
+pub(crate) mod grpc;
 pub(crate) mod http;
