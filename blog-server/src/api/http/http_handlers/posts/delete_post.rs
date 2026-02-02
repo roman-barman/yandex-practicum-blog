@@ -1,5 +1,5 @@
-use crate::api::errors::ApiError;
-use crate::api::extractors::AuthenticatedUser;
+use crate::api::http::errors::ApiError;
+use crate::api::http::extractors::AuthenticatedUser;
 use crate::application::blog::delete_post_handler;
 use crate::application::contracts::PostRepository;
 use crate::domain::value_objects::Identification;

@@ -1,5 +1,5 @@
-use crate::api::errors::ApiError;
-use crate::api::http_handlers::posts::PostResponse;
+use crate::api::http::errors::ApiError;
+use crate::api::http::http_handlers::posts::PostResponse;
 use crate::application::blog::get_post_list_handler;
 use crate::application::contracts::PostRepository;
 use actix_web::{HttpResponse, get, web};

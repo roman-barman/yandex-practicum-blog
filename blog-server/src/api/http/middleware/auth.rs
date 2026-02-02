@@ -1,4 +1,4 @@
-use crate::api::errors::create_error_response;
+use crate::api::http::errors::create_error_response;
 use crate::infrastructure::JwtService;
 use actix_web::body::BoxBody;
 use actix_web::dev::{ServiceRequest, ServiceResponse};

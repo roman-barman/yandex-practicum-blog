@@ -1,4 +1,4 @@
-use crate::api::errors::ApiError;
+use crate::api::http::errors::ApiError;
 use crate::application::auth::{RegisterUserCommand, register_user_handler};
 use crate::application::contracts::UserRepository;
 use actix_web::{HttpResponse, post, web};

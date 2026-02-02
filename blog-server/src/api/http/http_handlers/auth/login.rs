@@ -1,4 +1,4 @@
-use crate::api::errors::ApiError;
+use crate::api::http::errors::ApiError;
 use crate::application::auth::{VerifyUserCommand, verify_user_handler};
 use crate::application::contracts::UserRepository;
 use crate::infrastructure::JwtService;
