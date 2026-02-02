@@ -3,6 +3,8 @@ server:
   grpc_port: 50051
   host: 127.0.0.1
   log_level: info
+  white_list:
+    - "http://localhost:8080"
 database:
   host: "localhost"
   port: 5432

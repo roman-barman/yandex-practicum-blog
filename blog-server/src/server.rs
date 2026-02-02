@@ -6,6 +6,7 @@ use crate::api::http::middleware;
 use crate::application::contracts::{PostRepository, UserRepository};
 use crate::configuration::Configuration;
 use crate::infrastructure::{JwtService, PostgresPostRepository, PostgresUserRepository};
+use actix_cors::Cors;
 use actix_web::middleware::from_fn;
 use actix_web::{App, HttpServer, web};
 use sqlx::postgres::PgPoolOptions;
@@ -95,10 +96,26 @@ fn run_http_server(
     let post_repository_data: web::Data<Arc<dyn PostRepository>> =
         web::Data::new(Arc::clone(post_repository));
     let jwt_service_data = web::Data::new(Arc::clone(jwt_service));
+    let white_list = config
+        .get_server_configuration()
+        .get_white_list()
+        .iter()
+        .map(|origin| origin.to_string())
+        .collect::<Vec<String>>();
 
     let server = HttpServer::new(move || {
+        let mut cors = Cors::default()
+            .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+            .allow_any_header()
+            .max_age(3600);
+
+        for origin in &white_list {
+            cors = cors.allowed_origin(origin);
+        }
+
         App::new()
             .wrap(TracingLogger::default())
+            .wrap(cors)
             .service(
                 web::scope("/api")
                     .service(

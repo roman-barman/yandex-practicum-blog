@@ -46,6 +46,7 @@ pub(crate) struct ServerConfiguration {
     http_port: u16,
     grpc_port: u16,
     log_level: String,
+    white_list: Vec<String>,
 }
 
 impl ServerConfiguration {
@@ -62,6 +63,10 @@ impl ServerConfiguration {
 
     pub(crate) fn get_log_level(&self) -> &str {
         self.log_level.as_str()
+    }
+
+    pub(crate) fn get_white_list(&self) -> &[String] {
+        &self.white_list
     }
 }
 

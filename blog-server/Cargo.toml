@@ -29,6 +29,7 @@ tonic-prost = "0.14"
 prost-types = "0.14"
 tonic-reflection = "0.14"
 tower-http = { version = "0.6", features = ["trace"] }
+actix-cors = "0.7"
 
 [dependencies.sqlx]
 version = "0.8"
