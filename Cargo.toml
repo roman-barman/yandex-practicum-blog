@@ -1,3 +1,9 @@
 [workspace]
 resolver = "2"
-members = ["blog-server"]
+members = ["blog-client","blog-server"]
+
+[workspace.dependencies]
+secrecy = { version = "0.10", features = ["serde"] }
+async-trait = "0.1"
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
