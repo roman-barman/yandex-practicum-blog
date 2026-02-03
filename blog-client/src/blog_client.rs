@@ -1,9 +1,11 @@
+mod client;
+
 use crate::errors::{
     CreatePostError, DeletePostError, GetPostError, GetPostsListError, LoginError,
     RegisterUserError, UpdatePostError,
 };
 use async_trait::async_trait;
-use secrecy::SecretString;
+use secrecy::{ExposeSecret, SecretString};
 use uuid::Uuid;
 
 #[async_trait]
@@ -26,7 +28,7 @@ pub struct GetPostsListCommand {
 }
 
 pub struct GetPostCommand {
-    pub id: Uuid,
+    id: Uuid,
 }
 
 pub struct DeletePostCommand {
@@ -37,6 +39,26 @@ pub struct RegisterUserCommand {
     username: String,
     password: SecretString,
     email: String,
+}
+
+impl RegisterUserCommand {
+    pub fn new(username: String, password: String, email: String) -> Self {
+        Self {
+            username,
+            password: SecretString::from(password),
+            email,
+        }
+    }
+
+    pub fn get_username(&self) -> &str {
+        &self.username
+    }
+    pub fn get_password(&self) -> &str {
+        &self.password.expose_secret()
+    }
+    pub fn get_email(&self) -> &str {
+        &self.email
+    }
 }
 
 pub struct LoginCommand {
