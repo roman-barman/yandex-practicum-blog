@@ -3,8 +3,9 @@ use crate::errors::{
     RegisterUserError, UpdatePostError,
 };
 use crate::{
-    BlogClient, CreatePostCommand, DeletePostCommand, GetPostCommand, GetPostsListCommand,
-    LoginCommand, Pagination, Post, RegisterUserCommand, UpdatePostCommand, http_client,
+    AuthorizedCommand, BlogClient, CreatePostCommand, DeletePostCommand, GetPostCommand,
+    GetPostsListCommand, LoginCommand, Pagination, Post, RegisterUserCommand, UpdatePostCommand,
+    http_client,
 };
 use async_trait::async_trait;
 
@@ -27,35 +28,62 @@ impl Client {
 impl BlogClient for Client {
     async fn register_user(&self, cmd: RegisterUserCommand) -> Result<(), RegisterUserError> {
         match &self.protocol {
-            Protocol::Http(address) => http_client::register_user(&address, cmd).await,
+            Protocol::Http(address) => http_client::register_user(&address, &cmd).await,
             Protocol::Grpc(address) => todo!(),
         }
     }
 
-    async fn login(&self, cmd: LoginCommand) -> Result<(), LoginError> {
-        todo!()
+    async fn login(&self, cmd: LoginCommand) -> Result<String, LoginError> {
+        match &self.protocol {
+            Protocol::Http(address) => http_client::login(&address, &cmd).await,
+            Protocol::Grpc(address) => todo!(),
+        }
     }
 
-    async fn create_post(&self, cmd: CreatePostCommand) -> Result<Post, CreatePostError> {
-        todo!()
+    async fn create_post(
+        &self,
+        cmd: AuthorizedCommand<'_, CreatePostCommand>,
+    ) -> Result<Post, CreatePostError> {
+        match &self.protocol {
+            Protocol::Http(address) => http_client::create_post(&address, &cmd).await,
+            Protocol::Grpc(address) => todo!(),
+        }
     }
 
-    async fn update_post(&self, cmd: UpdatePostCommand) -> Result<Post, UpdatePostError> {
-        todo!()
+    async fn update_post(
+        &self,
+        cmd: AuthorizedCommand<'_, UpdatePostCommand>,
+    ) -> Result<Post, UpdatePostError> {
+        match &self.protocol {
+            Protocol::Http(address) => http_client::update_post(&address, &cmd).await,
+            Protocol::Grpc(address) => todo!(),
+        }
     }
 
-    async fn delete_post(&self, cmd: DeletePostCommand) -> Result<(), DeletePostError> {
-        todo!()
+    async fn delete_post(
+        &self,
+        cmd: AuthorizedCommand<'_, DeletePostCommand>,
+    ) -> Result<(), DeletePostError> {
+        match &self.protocol {
+            Protocol::Http(address) => http_client::delete_post(&address, &cmd).await,
+            Protocol::Grpc(address) => todo!(),
+        }
     }
 
     async fn get_post(&self, cmd: GetPostCommand) -> Result<Post, GetPostError> {
-        todo!()
+        match &self.protocol {
+            Protocol::Http(address) => http_client::get_post(&address, &cmd).await,
+            Protocol::Grpc(address) => todo!(),
+        }
     }
 
     async fn get_post_list(
         &self,
         cmd: GetPostsListCommand,
     ) -> Result<Pagination<Post>, GetPostsListError> {
-        todo!()
+        match &self.protocol {
+            Protocol::Http(address) => http_client::get_post_list(&address, &cmd).await,
+            Protocol::Grpc(address) => todo!(),
+        }
     }
 }
