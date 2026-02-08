@@ -1,5 +1,7 @@
 mod client;
-pub use client::{Client, Protocol, Errors};
+
+pub use client::{Client, Errors, Protocol};
+use std::fmt::{Display, Formatter};
 
 use crate::errors::{
     CreatePostError, DeletePostError, GetPostError, GetPostsListError, LoginError,
@@ -165,12 +167,12 @@ impl UpdatePostCommand {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 pub struct Post {
     id: Uuid,
     title: String,
     content: String,
-    author_id: Uuid,
+    user_id: Uuid,
     created_at: chrono::DateTime<chrono::Utc>,
     updated_at: chrono::DateTime<chrono::Utc>,
 }
@@ -180,7 +182,7 @@ impl Post {
         id: Uuid,
         title: String,
         content: String,
-        author_id: Uuid,
+        user_id: Uuid,
         created_at: chrono::DateTime<chrono::Utc>,
         updated_at: chrono::DateTime<chrono::Utc>,
     ) -> Self {
@@ -188,10 +190,22 @@ impl Post {
             id,
             title,
             content,
-            author_id,
+            user_id,
             created_at,
             updated_at,
         }
+    }
+}
+
+impl Display for Post {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "ID: {}", self.id)?;
+        writeln!(f, "Title: {}", self.title)?;
+        writeln!(f, "Content: {}", self.content)?;
+        writeln!(f, "Author ID: {}", self.user_id)?;
+        writeln!(f, "Created at: {}", self.created_at)?;
+        writeln!(f, "Updated at: {}", self.updated_at)?;
+        Ok(())
     }
 }
 
@@ -229,5 +243,37 @@ impl<T> Pagination<T> {
             limit,
             offset,
         }
+    }
+}
+
+impl<T: Display> Display for Pagination<T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "Total count: {}", self.total_count)?;
+        writeln!(f, "Limit: {}", self.limit)?;
+        writeln!(f, "Offset: {}", self.offset)?;
+        for item in &self.items {
+            writeln!(f, "{}", item)?;
+        }
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn deserialize_post() -> () {
+        let response = r#"{
+  "id": "204ff4d7-ea2e-4e7c-becb-4eb46747d81d",
+  "title": "Hello world",
+  "content": "content",
+  "user_id": "a25ff634-c48e-48c9-8f15-f19cd1c26884",
+  "created_at": "2026-02-08T15:39:47.064297652Z",
+  "updated_at": "2026-02-08T15:39:47.064300304Z"
+}"#;
+        let post = serde_json::from_str::<Post>(response);
+        println!("Deserialized post: {:?}", post);
+        assert!(post.is_ok());
     }
 }

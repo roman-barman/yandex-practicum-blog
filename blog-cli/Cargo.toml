@@ -8,3 +8,4 @@ tokio = { workspace = true }
 blog-client = { path = "../blog-client" }
 anyhow = { workspace = true }
 clap = { version = "4", features = ["derive"] }
+uuid = { workspace = true }

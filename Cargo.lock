@@ -469,6 +469,7 @@ dependencies = [
  "blog-client",
  "clap",
  "tokio",
+ "uuid",
 ]
 
 [[package]]
