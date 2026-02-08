@@ -1,4 +1,5 @@
 mod client;
+pub use client::{Client, Protocol, Errors};
 
 use crate::errors::{
     CreatePostError, DeletePostError, GetPostError, GetPostsListError, LoginError,
@@ -97,7 +98,7 @@ impl RegisterUserCommand {
         &self.username
     }
     pub fn get_password(&self) -> &str {
-        &self.password.expose_secret()
+        self.password.expose_secret()
     }
     pub fn get_email(&self) -> &str {
         &self.email

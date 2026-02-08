@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["blog-client","blog-server"]
+members = ["blog-cli","blog-client","blog-server"]
 
 [workspace.dependencies]
 secrecy = { version = "0.10", features = ["serde"] }
@@ -13,3 +13,5 @@ tonic = "0.14"
 prost = "0.14"
 tonic-prost = "0.14"
 prost-types = "0.14"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+anyhow = "1"
