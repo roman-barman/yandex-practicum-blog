@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["blog-cli","blog-client","blog-server"]
+members = ["blog-cli","blog-client","blog-server", "blog-wasm"]
 
 [workspace.dependencies]
 secrecy = { version = "0.10", features = ["serde"] }
