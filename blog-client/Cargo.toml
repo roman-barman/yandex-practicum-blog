@@ -11,4 +11,11 @@ uuid = { workspace = true }
 chrono = { workspace = true }
 serde_json = "1"
 thiserror = { workspace = true }
-serde = { version = "1", features = ["derive"] }
+serde = { workspace = true }
+tonic = { workspace = true }
+prost = { workspace = true }
+tonic-prost = { workspace = true }
+prost-types = { workspace = true }
+
+[build-dependencies]
+tonic-prost-build = "0.14"

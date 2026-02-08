@@ -174,6 +174,26 @@ pub struct Post {
     updated_at: chrono::DateTime<chrono::Utc>,
 }
 
+impl Post {
+    pub(crate) fn new(
+        id: Uuid,
+        title: String,
+        content: String,
+        author_id: Uuid,
+        created_at: chrono::DateTime<chrono::Utc>,
+        updated_at: chrono::DateTime<chrono::Utc>,
+    ) -> Self {
+        Self {
+            id,
+            title,
+            content,
+            author_id,
+            created_at,
+            updated_at,
+        }
+    }
+}
+
 pub struct AuthorizedCommand<'a, T> {
     command: T,
     token: &'a str,

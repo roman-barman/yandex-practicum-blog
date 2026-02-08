@@ -24,8 +24,6 @@ pub enum CreatePostError {
     InvalidPost(String),
     #[error("unauthorized")]
     Unauthorized,
-    #[error("forbidden")]
-    Forbidden,
 }
 
 #[derive(Debug, thiserror::Error)]

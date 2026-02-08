@@ -5,7 +5,7 @@ use crate::errors::{
 use crate::{
     AuthorizedCommand, BlogClient, CreatePostCommand, DeletePostCommand, GetPostCommand,
     GetPostsListCommand, LoginCommand, Pagination, Post, RegisterUserCommand, UpdatePostCommand,
-    http_client,
+    grpc_client, http_client,
 };
 use async_trait::async_trait;
 
@@ -29,14 +29,14 @@ impl BlogClient for Client {
     async fn register_user(&self, cmd: RegisterUserCommand) -> Result<(), RegisterUserError> {
         match &self.protocol {
             Protocol::Http(address) => http_client::register_user(&address, &cmd).await,
-            Protocol::Grpc(address) => todo!(),
+            Protocol::Grpc(address) => grpc_client::register_user(address.clone(), &cmd).await,
         }
     }
 
     async fn login(&self, cmd: LoginCommand) -> Result<String, LoginError> {
         match &self.protocol {
             Protocol::Http(address) => http_client::login(&address, &cmd).await,
-            Protocol::Grpc(address) => todo!(),
+            Protocol::Grpc(address) => grpc_client::login(address.clone(), &cmd).await,
         }
     }
 
@@ -46,7 +46,7 @@ impl BlogClient for Client {
     ) -> Result<Post, CreatePostError> {
         match &self.protocol {
             Protocol::Http(address) => http_client::create_post(&address, &cmd).await,
-            Protocol::Grpc(address) => todo!(),
+            Protocol::Grpc(address) => grpc_client::create_post(address.clone(), &cmd).await,
         }
     }
 
@@ -56,7 +56,7 @@ impl BlogClient for Client {
     ) -> Result<Post, UpdatePostError> {
         match &self.protocol {
             Protocol::Http(address) => http_client::update_post(&address, &cmd).await,
-            Protocol::Grpc(address) => todo!(),
+            Protocol::Grpc(address) => grpc_client::update_post(address.clone(), &cmd).await,
         }
     }
 
@@ -66,14 +66,14 @@ impl BlogClient for Client {
     ) -> Result<(), DeletePostError> {
         match &self.protocol {
             Protocol::Http(address) => http_client::delete_post(&address, &cmd).await,
-            Protocol::Grpc(address) => todo!(),
+            Protocol::Grpc(address) => grpc_client::delete_post(address.clone(), &cmd).await,
         }
     }
 
     async fn get_post(&self, cmd: GetPostCommand) -> Result<Post, GetPostError> {
         match &self.protocol {
             Protocol::Http(address) => http_client::get_post(&address, &cmd).await,
-            Protocol::Grpc(address) => todo!(),
+            Protocol::Grpc(address) => grpc_client::get_post(address.clone(), &cmd).await,
         }
     }
 
@@ -83,7 +83,7 @@ impl BlogClient for Client {
     ) -> Result<Pagination<Post>, GetPostsListError> {
         match &self.protocol {
             Protocol::Http(address) => http_client::get_post_list(&address, &cmd).await,
-            Protocol::Grpc(address) => todo!(),
+            Protocol::Grpc(address) => grpc_client::get_post_list(address.clone(), &cmd).await,
         }
     }
 }

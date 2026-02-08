@@ -1,0 +1,77 @@
+syntax="proto3";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+package blog;
+
+service BlogService {
+  rpc RegisterUser(RegisterUserCommand) returns (User);
+  rpc Login(VerifyUserCommand) returns (VerifyUserResult);
+  rpc CreatePost(CreatePostCommand) returns (Post);
+  rpc UpdatePost(UpdatePostCommand) returns (Post);
+  rpc DeletePost(DeletePostCommand) returns (google.protobuf.Empty);
+  rpc GetPost(GetPostCommand) returns (Post);
+  rpc GetPostList(GetPostListCommand) returns (GetPostListResult);
+}
+
+message User {
+  string id = 1;
+  string username = 2;
+  string email = 3;
+}
+
+message Post {
+  string id = 1;
+  string title = 2;
+  string content = 3;
+  string author_id = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+message RegisterUserCommand {
+  string username = 1;
+  string password = 2;
+  string email = 3;
+}
+
+message VerifyUserCommand {
+  string username = 1;
+  string password = 2;
+}
+
+message VerifyUserResult {
+  string token = 1;
+  User user = 2;
+}
+
+message CreatePostCommand {
+  string title = 1;
+  string content = 2;
+}
+
+message UpdatePostCommand {
+  string id = 1;
+  string title = 2;
+  string content = 3;
+}
+
+message DeletePostCommand {
+  string id = 1;
+}
+
+message GetPostCommand {
+  string id = 1;
+}
+
+message GetPostListCommand {
+  uint32 limit = 1;
+  uint32 offset = 2;
+}
+
+message GetPostListResult {
+  repeated Post post = 1;
+  uint32 total = 2;
+  uint32 limit = 3;
+  uint32 offset = 4;
+}
