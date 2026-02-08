@@ -1,11 +1,16 @@
-use yew::prelude::*;
+pub mod components;
+mod route;
 
-#[function_component]
-fn App() -> Html {
+use crate::route::{Route, switch};
+use yew::prelude::*;
+use yew_router::{BrowserRouter, Switch};
+
+#[component(App)]
+fn app() -> Html {
     html! {
-        <div>
-            <h1>{"Hello, World!"}</h1>
-        </div>
+        <BrowserRouter>
+            <Switch<Route> render={switch} />
+        </BrowserRouter>
     }
 }
 
