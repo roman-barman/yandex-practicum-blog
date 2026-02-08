@@ -2,15 +2,16 @@ use crate::errors::{
     CreatePostError, DeletePostError, GetPostError, GetPostsListError, LoginError,
     RegisterUserError, UpdatePostError,
 };
+use crate::grpc_client::GrpcClient;
+use crate::http_client::HttpClient;
 use crate::{
     AuthorizedCommand, BlogClient, CreatePostCommand, DeletePostCommand, GetPostCommand,
     GetPostsListCommand, LoginCommand, Pagination, Post, RegisterUserCommand, UpdatePostCommand,
-    grpc_client, http_client,
 };
 use async_trait::async_trait;
 
 pub struct Client {
-    protocol: Protocol,
+    client_mode: ClientMode,
 }
 
 pub enum Protocol {
@@ -18,72 +19,90 @@ pub enum Protocol {
     Grpc(String),
 }
 
+enum ClientMode {
+    Http(HttpClient),
+    Grpc(GrpcClient),
+}
+
 impl Client {
-    pub fn new(protocol: Protocol) -> Self {
-        Self { protocol }
+    pub async fn new(protocol: Protocol) -> Result<Self, Errors> {
+        match protocol {
+            Protocol::Http(address) => Ok(Self {
+                client_mode: ClientMode::Http(HttpClient::new(address)),
+            }),
+            Protocol::Grpc(address) => Ok(Self {
+                client_mode: ClientMode::Grpc(GrpcClient::new(address).await?),
+            }),
+        }
     }
 }
 
 #[async_trait]
 impl BlogClient for Client {
-    async fn register_user(&self, cmd: RegisterUserCommand) -> Result<(), RegisterUserError> {
-        match &self.protocol {
-            Protocol::Http(address) => http_client::register_user(&address, &cmd).await,
-            Protocol::Grpc(address) => grpc_client::register_user(address.clone(), &cmd).await,
+    async fn register_user(&mut self, cmd: RegisterUserCommand) -> Result<(), RegisterUserError> {
+        match self.client_mode {
+            ClientMode::Http(ref client) => client.register_user(&cmd).await,
+            ClientMode::Grpc(ref mut client) => client.register_user(&cmd).await,
         }
     }
 
-    async fn login(&self, cmd: LoginCommand) -> Result<String, LoginError> {
-        match &self.protocol {
-            Protocol::Http(address) => http_client::login(&address, &cmd).await,
-            Protocol::Grpc(address) => grpc_client::login(address.clone(), &cmd).await,
+    async fn login(&mut self, cmd: LoginCommand) -> Result<String, LoginError> {
+        match self.client_mode {
+            ClientMode::Http(ref client) => client.login(&cmd).await,
+            ClientMode::Grpc(ref mut client) => client.login(&cmd).await,
         }
     }
 
     async fn create_post(
-        &self,
+        &mut self,
         cmd: AuthorizedCommand<'_, CreatePostCommand>,
     ) -> Result<Post, CreatePostError> {
-        match &self.protocol {
-            Protocol::Http(address) => http_client::create_post(&address, &cmd).await,
-            Protocol::Grpc(address) => grpc_client::create_post(address.clone(), &cmd).await,
+        match self.client_mode {
+            ClientMode::Http(ref client) => client.create_post(&cmd).await,
+            ClientMode::Grpc(ref mut client) => client.create_post(&cmd).await,
         }
     }
 
     async fn update_post(
-        &self,
+        &mut self,
         cmd: AuthorizedCommand<'_, UpdatePostCommand>,
     ) -> Result<Post, UpdatePostError> {
-        match &self.protocol {
-            Protocol::Http(address) => http_client::update_post(&address, &cmd).await,
-            Protocol::Grpc(address) => grpc_client::update_post(address.clone(), &cmd).await,
+        match self.client_mode {
+            ClientMode::Http(ref client) => client.update_post(&cmd).await,
+            ClientMode::Grpc(ref mut client) => client.update_post(&cmd).await,
         }
     }
 
     async fn delete_post(
-        &self,
+        &mut self,
         cmd: AuthorizedCommand<'_, DeletePostCommand>,
     ) -> Result<(), DeletePostError> {
-        match &self.protocol {
-            Protocol::Http(address) => http_client::delete_post(&address, &cmd).await,
-            Protocol::Grpc(address) => grpc_client::delete_post(address.clone(), &cmd).await,
+        match self.client_mode {
+            ClientMode::Http(ref client) => client.delete_post(&cmd).await,
+            ClientMode::Grpc(ref mut client) => client.delete_post(&cmd).await,
         }
     }
 
-    async fn get_post(&self, cmd: GetPostCommand) -> Result<Post, GetPostError> {
-        match &self.protocol {
-            Protocol::Http(address) => http_client::get_post(&address, &cmd).await,
-            Protocol::Grpc(address) => grpc_client::get_post(address.clone(), &cmd).await,
+    async fn get_post(&mut self, cmd: GetPostCommand) -> Result<Post, GetPostError> {
+        match self.client_mode {
+            ClientMode::Http(ref client) => client.get_post(&cmd).await,
+            ClientMode::Grpc(ref mut client) => client.get_post(&cmd).await,
         }
     }
 
     async fn get_post_list(
-        &self,
+        &mut self,
         cmd: GetPostsListCommand,
     ) -> Result<Pagination<Post>, GetPostsListError> {
-        match &self.protocol {
-            Protocol::Http(address) => http_client::get_post_list(&address, &cmd).await,
-            Protocol::Grpc(address) => grpc_client::get_post_list(address.clone(), &cmd).await,
+        match self.client_mode {
+            ClientMode::Http(ref client) => client.get_post_list(&cmd).await,
+            ClientMode::Grpc(ref mut client) => client.get_post_list(&cmd).await,
         }
     }
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum Errors {
+    #[error("connection error: {0}")]
+    ConnectionError(#[from] tonic::transport::Error),
 }

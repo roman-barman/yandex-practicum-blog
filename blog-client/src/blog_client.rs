@@ -11,23 +11,23 @@ use uuid::Uuid;
 
 #[async_trait]
 pub trait BlogClient {
-    async fn register_user(&self, cmd: RegisterUserCommand) -> Result<(), RegisterUserError>;
-    async fn login(&self, cmd: LoginCommand) -> Result<String, LoginError>;
+    async fn register_user(&mut self, cmd: RegisterUserCommand) -> Result<(), RegisterUserError>;
+    async fn login(&mut self, cmd: LoginCommand) -> Result<String, LoginError>;
     async fn create_post(
-        &self,
+        &mut self,
         cmd: AuthorizedCommand<'_, CreatePostCommand>,
     ) -> Result<Post, CreatePostError>;
     async fn update_post(
-        &self,
+        &mut self,
         cmd: AuthorizedCommand<'_, UpdatePostCommand>,
     ) -> Result<Post, UpdatePostError>;
     async fn delete_post(
-        &self,
+        &mut self,
         cmd: AuthorizedCommand<'_, DeletePostCommand>,
     ) -> Result<(), DeletePostError>;
-    async fn get_post(&self, cmd: GetPostCommand) -> Result<Post, GetPostError>;
+    async fn get_post(&mut self, cmd: GetPostCommand) -> Result<Post, GetPostError>;
     async fn get_post_list(
-        &self,
+        &mut self,
         cmd: GetPostsListCommand,
     ) -> Result<Pagination<Post>, GetPostsListError>;
 }
@@ -120,7 +120,7 @@ impl LoginCommand {
         &self.username
     }
     pub fn get_password(&self) -> &str {
-        &self.password.expose_secret()
+        self.password.expose_secret()
     }
 }
 
@@ -209,7 +209,7 @@ impl<'a, T> AuthorizedCommand<'a, T> {
     }
 
     pub fn get_token(&self) -> &str {
-        &self.token
+        self.token
     }
 }
 

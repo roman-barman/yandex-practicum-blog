@@ -11,104 +11,97 @@ use uuid::Uuid;
 
 tonic::include_proto!("blog");
 
-pub(crate) async fn register_user(
-    address: String,
-    cmd: &crate::RegisterUserCommand,
-) -> Result<(), RegisterUserError> {
-    let mut client = BlogServiceClient::connect(address)
-        .await
-        .map_err(|e| RegisterUserError::Unexpected(e.to_string()))?;
-    let request: Request<RegisterUserCommand> = cmd.into();
-    let _ = client.register_user(request).await?;
-    Ok(())
+pub(crate) struct GrpcClient {
+    client: BlogServiceClient<tonic::transport::Channel>,
 }
 
-pub(crate) async fn login(
-    address: String,
-    cmd: &crate::LoginCommand,
-) -> Result<String, LoginError> {
-    let mut client = BlogServiceClient::connect(address)
-        .await
-        .map_err(|e| LoginError::Unexpected(e.to_string()))?;
-    let request: Request<VerifyUserCommand> = cmd.into();
-    let response = client.login(request).await?;
-    Ok(response.into_inner().token)
-}
+impl GrpcClient {
+    pub(crate) async fn new(address: String) -> Result<Self, tonic::transport::Error> {
+        Ok(Self {
+            client: BlogServiceClient::connect(address).await?,
+        })
+    }
 
-pub(crate) async fn create_post(
-    address: String,
-    cmd: &crate::AuthorizedCommand<'_, crate::CreatePostCommand>,
-) -> Result<crate::Post, CreatePostError> {
-    let mut client = BlogServiceClient::connect(address)
-        .await
-        .map_err(|e| CreatePostError::Unexpected(e.to_string()))?;
-    let request: Request<CreatePostCommand> = cmd
-        .try_into()
-        .map_err(|e: InvalidMetadataValue| CreatePostError::Unexpected(e.to_string()))?;
-    let response = client.create_post(request).await?;
-    let post = response.into_inner();
-    Ok(post
-        .try_into()
-        .map_err(|e| CreatePostError::Unexpected(e))?)
-}
+    pub(crate) async fn register_user(
+        &mut self,
+        cmd: &crate::RegisterUserCommand,
+    ) -> Result<(), RegisterUserError> {
+        let request: Request<RegisterUserCommand> = cmd.into();
+        let _ = self.client.register_user(request).await?;
+        Ok(())
+    }
 
-pub(crate) async fn update_post(
-    address: String,
-    cmd: &crate::AuthorizedCommand<'_, crate::UpdatePostCommand>,
-) -> Result<crate::Post, UpdatePostError> {
-    let mut client = BlogServiceClient::connect(address)
-        .await
-        .map_err(|e| UpdatePostError::Unexpected(e.to_string()))?;
-    let request: Request<UpdatePostCommand> = cmd
-        .try_into()
-        .map_err(|e: InvalidMetadataValue| UpdatePostError::Unexpected(e.to_string()))?;
-    let response = client.update_post(request).await?;
-    let post = response.into_inner();
-    Ok(post
-        .try_into()
-        .map_err(|e| UpdatePostError::Unexpected(e))?)
-}
+    pub(crate) async fn login(&mut self, cmd: &crate::LoginCommand) -> Result<String, LoginError> {
+        let request: Request<VerifyUserCommand> = cmd.into();
+        Ok(self.client.login(request).await?.into_inner().token)
+    }
 
-pub(crate) async fn delete_post(
-    address: String,
-    cmd: &crate::AuthorizedCommand<'_, crate::DeletePostCommand>,
-) -> Result<(), DeletePostError> {
-    let mut client = BlogServiceClient::connect(address)
-        .await
-        .map_err(|e| DeletePostError::Unexpected(e.to_string()))?;
-    let request: Request<DeletePostCommand> = cmd
-        .try_into()
-        .map_err(|e: InvalidMetadataValue| DeletePostError::Unexpected(e.to_string()))?;
-    let _ = client.delete_post(request).await?;
-    Ok(())
-}
+    pub(crate) async fn create_post(
+        &mut self,
+        cmd: &crate::AuthorizedCommand<'_, crate::CreatePostCommand>,
+    ) -> Result<crate::Post, CreatePostError> {
+        let request: Request<CreatePostCommand> = cmd
+            .try_into()
+            .map_err(|e: InvalidMetadataValue| CreatePostError::Unexpected(e.to_string()))?;
+        self.client
+            .create_post(request)
+            .await?
+            .into_inner()
+            .try_into()
+            .map_err(CreatePostError::Unexpected)
+    }
 
-pub(crate) async fn get_post(
-    address: String,
-    cmd: &crate::GetPostCommand,
-) -> Result<crate::Post, GetPostError> {
-    let mut client = BlogServiceClient::connect(address)
-        .await
-        .map_err(|e| GetPostError::Unexpected(e.to_string()))?;
-    let request: Request<GetPostCommand> = cmd.into();
-    let response = client.get_post(request).await?;
-    let post = response.into_inner();
-    Ok(post.try_into().map_err(|e| GetPostError::Unexpected(e))?)
-}
+    pub(crate) async fn update_post(
+        &mut self,
+        cmd: &crate::AuthorizedCommand<'_, crate::UpdatePostCommand>,
+    ) -> Result<crate::Post, UpdatePostError> {
+        let request: Request<UpdatePostCommand> = cmd
+            .try_into()
+            .map_err(|e: InvalidMetadataValue| UpdatePostError::Unexpected(e.to_string()))?;
+        self.client
+            .update_post(request)
+            .await?
+            .into_inner()
+            .try_into()
+            .map_err(UpdatePostError::Unexpected)
+    }
 
-pub(crate) async fn get_post_list(
-    address: String,
-    cmd: &crate::GetPostsListCommand,
-) -> Result<crate::Pagination<crate::Post>, GetPostsListError> {
-    let mut client = BlogServiceClient::connect(address)
-        .await
-        .map_err(|e| GetPostsListError::Unexpected(e.to_string()))?;
-    let request: Request<GetPostListCommand> = cmd.into();
-    let response = client.get_post_list(request).await?;
-    let pagination = response.into_inner();
-    Ok(pagination
-        .try_into()
-        .map_err(|e| GetPostsListError::Unexpected(e))?)
+    pub(crate) async fn delete_post(
+        &mut self,
+        cmd: &crate::AuthorizedCommand<'_, crate::DeletePostCommand>,
+    ) -> Result<(), DeletePostError> {
+        let request: Request<DeletePostCommand> = cmd
+            .try_into()
+            .map_err(|e: InvalidMetadataValue| DeletePostError::Unexpected(e.to_string()))?;
+        let _ = self.client.delete_post(request).await?;
+        Ok(())
+    }
+
+    pub(crate) async fn get_post(
+        &mut self,
+        cmd: &crate::GetPostCommand,
+    ) -> Result<crate::Post, GetPostError> {
+        let request: Request<GetPostCommand> = cmd.into();
+        self.client
+            .get_post(request)
+            .await?
+            .into_inner()
+            .try_into()
+            .map_err(GetPostError::Unexpected)
+    }
+
+    pub(crate) async fn get_post_list(
+        &mut self,
+        cmd: &crate::GetPostsListCommand,
+    ) -> Result<crate::Pagination<crate::Post>, GetPostsListError> {
+        let request: Request<GetPostListCommand> = cmd.into();
+        self.client
+            .get_post_list(request)
+            .await?
+            .into_inner()
+            .try_into()
+            .map_err(GetPostsListError::Unexpected)
+    }
 }
 
 impl TryFrom<GetPostListResult> for crate::Pagination<crate::Post> {
@@ -129,9 +122,7 @@ impl TryFrom<GetPostListResult> for crate::Pagination<crate::Post> {
 
 impl From<Status> for GetPostsListError {
     fn from(status: Status) -> Self {
-        match status.code() {
-            _ => GetPostsListError::Unexpected(status.message().to_string()),
-        }
+        GetPostsListError::Unexpected(status.message().to_string())
     }
 }
 
