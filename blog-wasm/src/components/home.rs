@@ -8,14 +8,6 @@ use gloo_storage::{LocalStorage, Storage};
 pub fn home() -> Html {
     let is_logged_in = use_state(|| LocalStorage::get::<String>("token").is_ok());
 
-    {
-        let is_logged_in = is_logged_in.clone();
-        use_effect_with((), move |_| {
-            is_logged_in.set(LocalStorage::get::<String>("token").is_ok());
-            || ()
-        });
-    }
-
     let on_logout = {
         let is_logged_in = is_logged_in.clone();
         Callback::from(move |_| {
