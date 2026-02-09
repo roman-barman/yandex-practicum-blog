@@ -1,9 +1,9 @@
+use crate::route::Route;
 use gloo_net::http::Request;
 use serde::Serialize;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_router::prelude::use_navigator;
-use crate::route::Route;
 
 #[derive(Serialize)]
 struct RegisterRequest {
@@ -14,9 +14,9 @@ struct RegisterRequest {
 
 #[component(Register)]
 pub fn register() -> Html {
-    let username = use_state(|| String::new());
-    let email = use_state(|| String::new());
-    let password = use_state(|| String::new());
+    let username = use_state(String::new);
+    let email = use_state(String::new);
+    let password = use_state(String::new);
     let error = use_state(|| Option::<String>::None);
     let success = use_state(|| false);
     let loading = use_state(|| false);
@@ -84,7 +84,10 @@ pub fn register() -> Html {
                         success.set(true);
                     }
                     Ok(r) => {
-                        error.set(Some(format!("Registration failed with status: {}", r.status())));
+                        error.set(Some(format!(
+                            "Registration failed with status: {}",
+                            r.status()
+                        )));
                     }
                     Err(e) => {
                         error.set(Some(format!("Request failed: {}", e)));
@@ -105,8 +108,8 @@ pub fn register() -> Html {
                             <h4 class="alert-heading">{"Registration Successful!"}</h4>
                             <p>{"Your account has been created. You can now log in."}</p>
                             <hr />
-                            <button 
-                                class="btn btn-primary" 
+                            <button
+                                class="btn btn-primary"
                                 onclick={Callback::from(move |_| navigator.push(&Route::Login))}
                             >
                                 {"Go to Login"}

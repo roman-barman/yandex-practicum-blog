@@ -1,11 +1,11 @@
+use crate::components::PostDetailInfo;
+use crate::route::Route;
 use gloo_net::http::Request;
 use gloo_storage::{LocalStorage, Storage};
 use serde::Serialize;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_router::prelude::use_navigator;
-use crate::route::Route;
-use crate::components::PostDetailInfo;
 
 #[derive(Serialize)]
 struct UpdatePostRequest {
@@ -20,8 +20,8 @@ pub struct EditPostProps {
 
 #[component(EditPost)]
 pub fn edit_post(props: &EditPostProps) -> Html {
-    let title = use_state(|| String::new());
-    let content = use_state(|| String::new());
+    let title = use_state(String::new);
+    let content = use_state(String::new);
     let loading = use_state(|| true);
     let saving = use_state(|| false);
     let error = use_state(|| Option::<String>::None);

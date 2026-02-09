@@ -1,10 +1,10 @@
+use crate::route::Route;
 use gloo_net::http::Request;
 use gloo_storage::{LocalStorage, Storage};
 use serde::{Deserialize, Serialize};
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
-use yew_router::prelude::{use_navigator, Link};
-use crate::route::Route;
+use yew_router::prelude::{Link, use_navigator};
 
 #[derive(Serialize)]
 struct LoginRequest {
@@ -19,8 +19,8 @@ struct LoginResponse {
 
 #[component(Login)]
 pub fn login() -> Html {
-    let username = use_state(|| String::new());
-    let password = use_state(|| String::new());
+    let username = use_state(String::new);
+    let password = use_state(String::new);
     let error = use_state(|| Option::<String>::None);
     let loading = use_state(|| false);
     let navigator = use_navigator().unwrap();
@@ -72,20 +72,18 @@ pub fn login() -> Html {
                     .await;
 
                 match resp {
-                    Ok(r) if r.ok() => {
-                        match r.json::<LoginResponse>().await {
-                            Ok(data) => {
-                                if let Err(e) = LocalStorage::set("token", data.token) {
-                                    error.set(Some(format!("Failed to save token: {}", e)));
-                                } else {
-                                    navigator.push(&Route::Home);
-                                }
-                            }
-                            Err(e) => {
-                                error.set(Some(format!("Failed to parse response: {}", e)));
+                    Ok(r) if r.ok() => match r.json::<LoginResponse>().await {
+                        Ok(data) => {
+                            if let Err(e) = LocalStorage::set("token", data.token) {
+                                error.set(Some(format!("Failed to save token: {}", e)));
+                            } else {
+                                navigator.push(&Route::Home);
                             }
                         }
-                    }
+                        Err(e) => {
+                            error.set(Some(format!("Failed to parse response: {}", e)));
+                        }
+                    },
                     Ok(r) => {
                         error.set(Some(format!("Login failed with status: {}", r.status())));
                     }

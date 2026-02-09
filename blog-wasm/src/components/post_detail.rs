@@ -1,6 +1,6 @@
+use crate::route::Route;
 use gloo_net::http::Request;
 use yew::prelude::*;
-use crate::route::Route;
 use yew_router::prelude::Link;
 
 #[derive(Clone, PartialEq, Debug, serde::Deserialize)]
@@ -59,7 +59,7 @@ pub fn post_detail(props: &PostDetailProps) -> Html {
     html! {
         <div class="container mt-4">
             <Link<Route> to={Route::Home} classes="btn btn-outline-primary mb-3">{"Back to Home"}</Link<Route>>
-            
+
             if *loading {
                 <div class="d-flex justify-content-center">
                     <div class="spinner-border" role="status">

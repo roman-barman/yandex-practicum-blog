@@ -1,8 +1,8 @@
-use gloo_net::http::Request;
-use yew::prelude::*;
 use crate::route::Route;
-use yew_router::prelude::Link;
+use gloo_net::http::Request;
 use gloo_storage::{LocalStorage, Storage};
+use yew::prelude::*;
+use yew_router::prelude::Link;
 
 #[derive(Clone, PartialEq, Debug, serde::Deserialize)]
 pub struct Post {
@@ -21,7 +21,7 @@ struct PostsResponse {
 
 #[component(PostsList)]
 pub fn posts_list() -> Html {
-    let posts = use_state(|| Vec::<Post>::new());
+    let posts = use_state(Vec::<Post>::new);
     let total = use_state(|| 0usize);
     let limit = use_state(|| 5usize);
     let offset = use_state(|| 0usize);
@@ -38,36 +38,39 @@ pub fn posts_list() -> Html {
         let loading = loading.clone();
         let error = error.clone();
         let refresh_trigger = refresh_trigger.clone();
-        use_effect_with((*limit, *offset, *refresh_trigger), move |(limit, offset, _)| {
-            let l = *limit;
-            let o = *offset;
-            let posts = posts.clone();
-            let total = total.clone();
-            let loading = loading.clone();
-            let error = error.clone();
-            loading.set(true);
-            error.set(None);
-            wasm_bindgen_futures::spawn_local(async move {
-                let url = format!("http://localhost:3000/api/posts?limit={}&offset={}", l, o);
-                let resp = Request::get(&url).send().await;
-                match resp {
-                    Ok(r) => match r.json::<PostsResponse>().await {
-                        Ok(data) => {
-                            posts.set(data.posts);
-                            total.set(data.total);
-                        }
+        use_effect_with(
+            (*limit, *offset, *refresh_trigger),
+            move |(limit, offset, _)| {
+                let l = *limit;
+                let o = *offset;
+                let posts = posts.clone();
+                let total = total.clone();
+                let loading = loading.clone();
+                let error = error.clone();
+                loading.set(true);
+                error.set(None);
+                wasm_bindgen_futures::spawn_local(async move {
+                    let url = format!("http://localhost:3000/api/posts?limit={}&offset={}", l, o);
+                    let resp = Request::get(&url).send().await;
+                    match resp {
+                        Ok(r) => match r.json::<PostsResponse>().await {
+                            Ok(data) => {
+                                posts.set(data.posts);
+                                total.set(data.total);
+                            }
+                            Err(e) => {
+                                error.set(Some(format!("Failed to parse response: {}", e)));
+                            }
+                        },
                         Err(e) => {
-                            error.set(Some(format!("Failed to parse response: {}", e)));
+                            error.set(Some(format!("Request failed: {}", e)));
                         }
-                    },
-                    Err(e) => {
-                        error.set(Some(format!("Request failed: {}", e)));
                     }
-                }
-                loading.set(false);
-            });
-            || ()
-        });
+                    loading.set(false);
+                });
+                || ()
+            },
+        );
     }
 
     let on_prev = {
@@ -127,11 +130,15 @@ pub fn posts_list() -> Html {
         })
     };
 
-    let current_page = if *limit == 0 { 1 } else { (*offset / *limit) + 1 };
+    let current_page = if *limit == 0 {
+        1
+    } else {
+        (*offset / *limit) + 1
+    };
     let total_pages = if *limit == 0 {
         1
     } else {
-        ((*total + *limit - 1) / *limit).max(1)
+        (*total).div_ceil(*limit).max(1)
     };
 
     html! {

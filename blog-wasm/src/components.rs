@@ -1,14 +1,14 @@
 mod home;
-mod posts_list;
-mod post_detail;
 mod login;
+mod post_detail;
+mod posts_list;
 
-mod register;
 mod edit_post;
+mod register;
 
-pub use home::*;
-pub use posts_list::*;
-pub use post_detail::*;
-pub use login::*;
-pub use register::*;
 pub use edit_post::*;
+pub use home::*;
+pub use login::*;
+pub use post_detail::*;
+pub use posts_list::*;
+pub use register::*;
