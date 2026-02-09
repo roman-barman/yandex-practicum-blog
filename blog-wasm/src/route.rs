@@ -8,6 +8,8 @@ pub enum Route {
     Home,
     #[at("/login")]
     Login,
+    #[at("/register")]
+    Register,
     #[at("/post/:id")]
     PostDetail { id: String },
     #[not_found]
@@ -19,6 +21,7 @@ pub fn switch(routes: Route) -> Html {
     match routes {
         Route::Home => html! {<Home/>},
         Route::Login => html! {<Login/>},
+        Route::Register => html! {<Register/>},
         Route::PostDetail { id } => html! { <PostDetail id={id} /> },
         Route::NotFound => html! { <h1>{ "404" }</h1> },
     }

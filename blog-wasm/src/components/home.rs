@@ -35,7 +35,7 @@ pub fn home() -> Html {
                     }
                 </div>
                 <div class="col-auto">
-                    <button type="button" class="btn btn-light">{"Sign In"}</button>
+                    <Link<Route> to={Route::Register} classes="btn btn-light">{"Sign Up"}</Link<Route>>
                 </div>
                 <div class="col">
                 </div>

@@ -1,27 +1,24 @@
 use gloo_net::http::Request;
-use gloo_storage::{LocalStorage, Storage};
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
-use yew_router::prelude::{use_navigator, Link};
+use yew_router::prelude::use_navigator;
 use crate::route::Route;
 
 #[derive(Serialize)]
-struct LoginRequest {
+struct RegisterRequest {
     username: String,
+    email: String,
     password: String,
 }
 
-#[derive(Deserialize)]
-struct LoginResponse {
-    token: String,
-}
-
-#[component(Login)]
-pub fn login() -> Html {
+#[component(Register)]
+pub fn register() -> Html {
     let username = use_state(|| String::new());
+    let email = use_state(|| String::new());
     let password = use_state(|| String::new());
     let error = use_state(|| Option::<String>::None);
+    let success = use_state(|| false);
     let loading = use_state(|| false);
     let navigator = use_navigator().unwrap();
 
@@ -30,6 +27,14 @@ pub fn login() -> Html {
         Callback::from(move |e: InputEvent| {
             let input: HtmlInputElement = e.target_unchecked_into();
             username.set(input.value());
+        })
+    };
+
+    let on_email_input = {
+        let email = email.clone();
+        Callback::from(move |e: InputEvent| {
+            let input: HtmlInputElement = e.target_unchecked_into();
+            email.set(input.value());
         })
     };
 
@@ -43,51 +48,43 @@ pub fn login() -> Html {
 
     let on_submit = {
         let username = username.clone();
+        let email = email.clone();
         let password = password.clone();
         let error = error.clone();
+        let success = success.clone();
         let loading = loading.clone();
-        let navigator = navigator.clone();
 
         Callback::from(move |e: SubmitEvent| {
             e.prevent_default();
             let username_val = (*username).clone();
+            let email_val = (*email).clone();
             let password_val = (*password).clone();
             let error = error.clone();
+            let success = success.clone();
             let loading = loading.clone();
-            let navigator = navigator.clone();
 
             loading.set(true);
             error.set(None);
 
             wasm_bindgen_futures::spawn_local(async move {
-                let login_data = LoginRequest {
+                let register_data = RegisterRequest {
                     username: username_val,
+                    email: email_val,
                     password: password_val,
                 };
 
-                let resp = Request::post("http://localhost:3000/api/auth/login")
-                    .json(&login_data)
+                let resp = Request::post("http://localhost:3000/api/auth/register")
+                    .json(&register_data)
                     .unwrap()
                     .send()
                     .await;
 
                 match resp {
                     Ok(r) if r.ok() => {
-                        match r.json::<LoginResponse>().await {
-                            Ok(data) => {
-                                if let Err(e) = LocalStorage::set("token", data.token) {
-                                    error.set(Some(format!("Failed to save token: {}", e)));
-                                } else {
-                                    navigator.push(&Route::Home);
-                                }
-                            }
-                            Err(e) => {
-                                error.set(Some(format!("Failed to parse response: {}", e)));
-                            }
-                        }
+                        success.set(true);
                     }
                     Ok(r) => {
-                        error.set(Some(format!("Login failed with status: {}", r.status())));
+                        error.set(Some(format!("Registration failed with status: {}", r.status())));
                     }
                     Err(e) => {
                         error.set(Some(format!("Request failed: {}", e)));
@@ -98,13 +95,36 @@ pub fn login() -> Html {
         })
     };
 
+    if *success {
+        let navigator = navigator.clone();
+        return html! {
+            <div class="container mt-5">
+                <div class="row justify-content-center">
+                    <div class="col-md-4">
+                        <div class="alert alert-success" role="alert">
+                            <h4 class="alert-heading">{"Registration Successful!"}</h4>
+                            <p>{"Your account has been created. You can now log in."}</p>
+                            <hr />
+                            <button 
+                                class="btn btn-primary" 
+                                onclick={Callback::from(move |_| navigator.push(&Route::Login))}
+                            >
+                                {"Go to Login"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        };
+    }
+
     html! {
         <div class="container mt-5">
             <div class="row justify-content-center">
                 <div class="col-md-4">
                     <div class="card">
                         <div class="card-header text-center">
-                            <h3>{"Login"}</h3>
+                            <h3>{"Register"}</h3>
                         </div>
                         <div class="card-body">
                             if let Some(err) = &*error {
@@ -121,6 +141,17 @@ pub fn login() -> Html {
                                         id="username"
                                         value={(*username).clone()}
                                         oninput={on_username_input}
+                                        required=true
+                                    />
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">{"Email"}</label>
+                                    <input
+                                        type="email"
+                                        class="form-control"
+                                        id="email"
+                                        value={(*email).clone()}
+                                        oninput={on_email_input}
                                         required=true
                                     />
                                 </div>
@@ -144,13 +175,13 @@ pub fn login() -> Html {
                                         if *loading {
                                             <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                                         }
-                                        {"Login"}
+                                        {"Register"}
                                     </button>
                                 </div>
                             </form>
                         </div>
                         <div class="card-footer text-center">
-                            <p class="mb-0">{"Don't have an account? "} <Link<Route> to={Route::Register}>{"Sign Up"}</Link<Route>></p>
+                            <p class="mb-0">{"Already have an account? "} <button class="btn btn-link p-0 pb-1" onclick={Callback::from(move |_| navigator.push(&Route::Login))}>{"Log In"}</button></p>
                         </div>
                     </div>
                 </div>
