@@ -3,8 +3,17 @@ use yew::{Html, component, html};
 #[component(Home)]
 pub fn home() -> Html {
     html! {
-        <div>
-            <h1>{"Hello, world!"}</h1>
+        <div class="container text-center">
+            <div class="row">
+                <div class="col">
+                    <button type="button" class="btn btn-primary">{"Log In"}</button>
+                </div>
+                <div class="col">
+                    <button type="button" class="btn btn-light">{"Sign In"}</button>
+                </div>
+                <div class="col-10">
+                </div>
+            </div>
         </div>
-    }
+        }
 }
