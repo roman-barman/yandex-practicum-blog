@@ -12,6 +12,8 @@ pub enum Route {
     Register,
     #[at("/post/:id")]
     PostDetail { id: String },
+    #[at("/post/:id/edit")]
+    EditPost { id: String },
     #[not_found]
     #[at("/404")]
     NotFound,
@@ -23,6 +25,7 @@ pub fn switch(routes: Route) -> Html {
         Route::Login => html! {<Login/>},
         Route::Register => html! {<Register/>},
         Route::PostDetail { id } => html! { <PostDetail id={id} /> },
+        Route::EditPost { id } => html! { <EditPost id={id} /> },
         Route::NotFound => html! { <h1>{ "404" }</h1> },
     }
 }

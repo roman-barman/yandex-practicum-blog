@@ -2,6 +2,7 @@ use gloo_net::http::Request;
 use yew::prelude::*;
 use crate::route::Route;
 use yew_router::prelude::Link;
+use gloo_storage::{LocalStorage, Storage};
 
 #[derive(Clone, PartialEq, Debug, serde::Deserialize)]
 pub struct Post {
@@ -26,6 +27,7 @@ pub fn posts_list() -> Html {
     let offset = use_state(|| 0usize);
     let loading = use_state(|| false);
     let error = use_state(|| Option::<String>::None);
+    let is_logged_in = use_state(|| LocalStorage::get::<String>("token").is_ok());
 
     {
         let posts = posts.clone();
@@ -135,9 +137,14 @@ pub fn posts_list() -> Html {
                                         <td>{post.title}</td>
                                         <td>{post.content}</td>
                                         <td>
-                                            <Link<Route> to={Route::PostDetail { id: post.id }} classes="btn btn-sm btn-primary">
+                                            <Link<Route> to={Route::PostDetail { id: post.id.clone() }} classes="btn btn-sm btn-primary me-2">
                                                 {"View"}
                                             </Link<Route>>
+                                            if *is_logged_in {
+                                                <Link<Route> to={Route::EditPost { id: post.id }} classes="btn btn-sm btn-outline-warning">
+                                                    {"Update"}
+                                                </Link<Route>>
+                                            }
                                         </td>
                                     </tr>
                                 }
