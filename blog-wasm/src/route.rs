@@ -6,6 +6,8 @@ use yew_router::prelude::*;
 pub enum Route {
     #[at("/")]
     Home,
+    #[at("/login")]
+    Login,
     #[at("/post/:id")]
     PostDetail { id: String },
     #[not_found]
@@ -16,6 +18,7 @@ pub enum Route {
 pub fn switch(routes: Route) -> Html {
     match routes {
         Route::Home => html! {<Home/>},
+        Route::Login => html! {<Login/>},
         Route::PostDetail { id } => html! { <PostDetail id={id} /> },
         Route::NotFound => html! { <h1>{ "404" }</h1> },
     }
