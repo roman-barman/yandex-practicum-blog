@@ -28,6 +28,7 @@ pub fn posts_list() -> Html {
     let loading = use_state(|| false);
     let error = use_state(|| Option::<String>::None);
     let is_logged_in = use_state(|| LocalStorage::get::<String>("token").is_ok());
+    let refresh_trigger = use_state(|| 0);
 
     {
         let posts = posts.clone();
@@ -36,7 +37,8 @@ pub fn posts_list() -> Html {
         let offset = offset.clone();
         let loading = loading.clone();
         let error = error.clone();
-        use_effect_with((*limit, *offset), move |(limit, offset)| {
+        let refresh_trigger = refresh_trigger.clone();
+        use_effect_with((*limit, *offset, *refresh_trigger), move |(limit, offset, _)| {
             let l = *limit;
             let o = *offset;
             let posts = posts.clone();
@@ -86,6 +88,42 @@ pub fn posts_list() -> Html {
             if next < *total {
                 offset.set(next);
             }
+        })
+    };
+
+    let on_delete = {
+        let refresh_trigger = refresh_trigger.clone();
+        let error = error.clone();
+        let loading = loading.clone();
+        Callback::from(move |id: String| {
+            let refresh_trigger = refresh_trigger.clone();
+            let error = error.clone();
+            let loading = loading.clone();
+            let token = LocalStorage::get::<String>("token").ok();
+
+            wasm_bindgen_futures::spawn_local(async move {
+                if let Some(t) = token {
+                    loading.set(true);
+                    let url = format!("http://localhost:3000/api/posts/{}", id);
+                    let resp = Request::delete(&url)
+                        .header("Authorization", &format!("Bearer {}", t))
+                        .send()
+                        .await;
+
+                    match resp {
+                        Ok(r) if r.ok() => {
+                            refresh_trigger.set(*refresh_trigger + 1);
+                        }
+                        Ok(r) => {
+                            error.set(Some(format!("Delete failed: {}", r.status())));
+                        }
+                        Err(e) => {
+                            error.set(Some(format!("Request failed: {}", e)));
+                        }
+                    }
+                    loading.set(false);
+                }
+            });
         })
     };
 
@@ -141,9 +179,21 @@ pub fn posts_list() -> Html {
                                                 {"View"}
                                             </Link<Route>>
                                             if *is_logged_in {
-                                                <Link<Route> to={Route::EditPost { id: post.id }} classes="btn btn-sm btn-outline-warning">
+                                                <Link<Route> to={Route::EditPost { id: post.id.clone() }} classes="btn btn-sm btn-outline-warning me-2">
                                                     {"Update"}
                                                 </Link<Route>>
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    onclick={
+                                                        let on_delete = on_delete.clone();
+                                                        let id = post.id.clone();
+                                                        Callback::from(move |_| on_delete.emit(id.clone()))
+                                                    }
+                                                    disabled={*loading}
+                                                >
+                                                    {"Delete"}
+                                                </button>
                                             }
                                         </td>
                                     </tr>
