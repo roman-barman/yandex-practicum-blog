@@ -1,3 +1,4 @@
+use crate::components::PostsList;
 use yew::{Html, component, html};
 
 #[component(Home)]
@@ -12,6 +13,11 @@ pub fn home() -> Html {
                     <button type="button" class="btn btn-light">{"Sign In"}</button>
                 </div>
                 <div class="col-10">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <PostsList />
                 </div>
             </div>
         </div>
