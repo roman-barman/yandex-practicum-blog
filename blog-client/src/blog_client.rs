@@ -12,75 +12,96 @@ use secrecy::{ExposeSecret, SecretString};
 use serde::Deserialize;
 use uuid::Uuid;
 
+/// Trait representing a client for the blog system.
+///
+/// It provides methods for user management and post operations.
 #[async_trait]
 pub trait BlogClient {
+    /// Registers a new user.
     async fn register_user(&mut self, cmd: RegisterUserCommand) -> Result<(), RegisterUserError>;
+    /// Authenticates a user and returns a JWT token.
     async fn login(&mut self, cmd: LoginCommand) -> Result<String, LoginError>;
+    /// Creates a new post. Requires authorization.
     async fn create_post(
         &mut self,
         cmd: AuthorizedCommand<'_, CreatePostCommand>,
     ) -> Result<Post, CreatePostError>;
+    /// Updates an existing post. Requires authorization.
     async fn update_post(
         &mut self,
         cmd: AuthorizedCommand<'_, UpdatePostCommand>,
     ) -> Result<Post, UpdatePostError>;
+    /// Deletes a post. Requires authorization.
     async fn delete_post(
         &mut self,
         cmd: AuthorizedCommand<'_, DeletePostCommand>,
     ) -> Result<(), DeletePostError>;
+    /// Retrieves a single post by its ID.
     async fn get_post(&mut self, cmd: GetPostCommand) -> Result<Post, GetPostError>;
+    /// Retrieves a paginated list of posts.
     async fn get_post_list(
         &mut self,
         cmd: GetPostsListCommand,
     ) -> Result<Pagination<Post>, GetPostsListError>;
 }
 
+/// Command for retrieving a list of posts with pagination.
 pub struct GetPostsListCommand {
     limit: usize,
     offset: usize,
 }
 
 impl GetPostsListCommand {
+    /// Creates a new `GetPostsListCommand`.
     pub fn new(limit: usize, offset: usize) -> Self {
         Self { limit, offset }
     }
 
+    /// Returns the limit.
     pub fn get_limit(&self) -> usize {
         self.limit
     }
+    /// Returns the offset.
     pub fn get_offset(&self) -> usize {
         self.offset
     }
 }
 
+/// Command for retrieving a specific post by its ID.
 pub struct GetPostCommand {
     id: Uuid,
 }
 
 impl GetPostCommand {
+    /// Creates a new `GetPostCommand`.
     pub fn new(id: Uuid) -> Self {
         Self { id }
     }
 
+    /// Returns the post ID.
     pub fn get_id(&self) -> &Uuid {
         &self.id
     }
 }
 
+/// Command for deleting a post by its ID.
 pub struct DeletePostCommand {
     id: Uuid,
 }
 
 impl DeletePostCommand {
+    /// Creates a new `DeletePostCommand`.
     pub fn new(id: Uuid) -> Self {
         Self { id }
     }
 
+    /// Returns the post ID.
     pub fn get_id(&self) -> &Uuid {
         &self.id
     }
 }
 
+/// Command for registering a new user.
 pub struct RegisterUserCommand {
     username: String,
     password: SecretString,
@@ -88,6 +109,7 @@ pub struct RegisterUserCommand {
 }
 
 impl RegisterUserCommand {
+    /// Creates a new `RegisterUserCommand`.
     pub fn new(username: String, password: String, email: String) -> Self {
         Self {
             username,
@@ -96,55 +118,67 @@ impl RegisterUserCommand {
         }
     }
 
+    /// Returns the username.
     pub fn get_username(&self) -> &str {
         &self.username
     }
+    /// Returns the password (exposed from secret string).
     pub fn get_password(&self) -> &str {
         self.password.expose_secret()
     }
+    /// Returns the email.
     pub fn get_email(&self) -> &str {
         &self.email
     }
 }
 
+/// Command for logging in a user.
 pub struct LoginCommand {
     username: String,
     password: SecretString,
 }
 
 impl LoginCommand {
+    /// Creates a new `LoginCommand`.
     pub fn new(username: String, password: String) -> Self {
         Self {
             username,
             password: SecretString::from(password),
         }
     }
+    /// Returns the username.
     pub fn get_username(&self) -> &str {
         &self.username
     }
+    /// Returns the password (exposed from secret string).
     pub fn get_password(&self) -> &str {
         self.password.expose_secret()
     }
 }
 
+/// Command for creating a new post.
 pub struct CreatePostCommand {
     title: String,
     content: String,
 }
 
 impl CreatePostCommand {
+    /// Creates a new `CreatePostCommand`.
     pub fn new(title: String, content: String) -> Self {
         Self { title, content }
     }
 
+    /// Returns the title.
     pub fn get_title(&self) -> &str {
         &self.title
     }
+    /// Returns the content.
     pub fn get_content(&self) -> &str {
         &self.content
     }
 }
 
+/// Command for updating an existing post.
 pub struct UpdatePostCommand {
     id: Uuid,
     title: String,
@@ -152,21 +186,26 @@ pub struct UpdatePostCommand {
 }
 
 impl UpdatePostCommand {
+    /// Creates a new `UpdatePostCommand`.
     pub fn new(id: Uuid, title: String, content: String) -> Self {
         Self { id, title, content }
     }
 
+    /// Returns the post ID.
     pub fn get_id(&self) -> &Uuid {
         &self.id
     }
+    /// Returns the updated title.
     pub fn get_title(&self) -> &str {
         &self.title
     }
+    /// Returns the updated content.
     pub fn get_content(&self) -> &str {
         &self.content
     }
 }
 
+/// Represents a blog post.
 #[derive(Deserialize, Debug)]
 pub struct Post {
     id: Uuid,
@@ -209,25 +248,30 @@ impl Display for Post {
     }
 }
 
+/// Wrapper for commands that require an authorization token.
 pub struct AuthorizedCommand<'a, T> {
     command: T,
     token: &'a str,
 }
 
 impl<'a, T> AuthorizedCommand<'a, T> {
+    /// Creates a new `AuthorizedCommand`.
     pub fn new(command: T, token: &'a str) -> Self {
         Self { command, token }
     }
 
+    /// Returns the wrapped command.
     pub fn get_command(&self) -> &T {
         &self.command
     }
 
+    /// Returns the authorization token.
     pub fn get_token(&self) -> &str {
         self.token
     }
 }
 
+/// Represents a paginated list of items.
 pub struct Pagination<T> {
     items: Vec<T>,
     total_count: usize,
@@ -236,6 +280,7 @@ pub struct Pagination<T> {
 }
 
 impl<T> Pagination<T> {
+    /// Creates a new `Pagination` result.
     pub fn new(items: Vec<T>, total_count: usize, limit: usize, offset: usize) -> Self {
         Self {
             items,

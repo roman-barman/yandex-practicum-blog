@@ -10,12 +10,18 @@ use crate::{
 };
 use async_trait::async_trait;
 
+/// Client for interacting with the blog system.
+///
+/// It wraps different communication protocols (HTTP, gRPC).
 pub struct Client {
     client_mode: ClientMode,
 }
 
+/// Supported communication protocols.
 pub enum Protocol {
+    /// HTTP protocol with the server address.
     Http(String),
+    /// gRPC protocol with the server address.
     Grpc(String),
 }
 
@@ -25,6 +31,7 @@ enum ClientMode {
 }
 
 impl Client {
+    /// Creates a new `Client` with the specified protocol.
     pub async fn new(protocol: Protocol) -> Result<Self, Errors> {
         match protocol {
             Protocol::Http(address) => Ok(Self {
@@ -101,8 +108,10 @@ impl BlogClient for Client {
     }
 }
 
+/// Errors that can occur during client initialization.
 #[derive(Debug, thiserror::Error)]
 pub enum Errors {
+    /// Connection error for gRPC.
     #[error("connection error: {0}")]
     ConnectionError(#[from] tonic::transport::Error),
 }
