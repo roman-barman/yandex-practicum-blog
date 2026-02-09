@@ -1,5 +1,7 @@
 use gloo_net::http::Request;
 use yew::prelude::*;
+use crate::route::Route;
+use yew_router::prelude::Link;
 
 #[derive(Clone, PartialEq, Debug, serde::Deserialize)]
 pub struct Post {
@@ -116,21 +118,27 @@ pub fn posts_list() -> Html {
                         <th scope="col">{"#"}</th>
                         <th scope="col">{"Title"}</th>
                         <th scope="col">{"Content"}</th>
+                        <th scope="col">{"Actions"}</th>
                     </tr>
                 </thead>
                 <tbody>
                     {
                         if *loading {
-                            html! {<tr><td colspan="3"><div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>{" Loading..."}</td></tr>}
+                            html! {<tr><td colspan="4"><div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>{" Loading..."}</td></tr>}
                         } else if posts.is_empty() {
-                            html! {<tr><td colspan="3" class="text-center text-muted">{"No posts"}</td></tr>}
+                            html! {<tr><td colspan="4" class="text-center text-muted">{"No posts"}</td></tr>}
                         } else {
                             posts.iter().cloned().map(|post| {
                                 html! {
                                     <tr key={post.id.clone()}>
-                                        <th scope="row">{post.id}</th>
+                                        <th scope="row">{post.id.clone()}</th>
                                         <td>{post.title}</td>
                                         <td>{post.content}</td>
+                                        <td>
+                                            <Link<Route> to={Route::PostDetail { id: post.id }} classes="btn btn-sm btn-primary">
+                                                {"View"}
+                                            </Link<Route>>
+                                        </td>
                                     </tr>
                                 }
                             }).collect::<Html>()
