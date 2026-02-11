@@ -22,25 +22,17 @@ This repository is a Rust workspace containing the following projects:
 
 ### 1. Database Setup
 
-The server requires a PostgreSQL database. You can start one using Docker:
+The server requires a PostgreSQL database. You can start one using Docker and the init script:
 
 ```bash
-docker run --name blog-postgres -e POSTGRES_PASSWORD=password -p 5432:5432 -d postgres
-```
-
-Then run the migrations:
-
-```bash
-cd blog-server
-cargo sqlx database create
-cargo sqlx migrate run
+chmod +x scripts/init_db.sh
+./scripts/init_db.sh
 ```
 
 ### 2. Running the Server
 
 ```bash
-cd blog-server
-cargo run
+APP_JWT__SECRET=<secret> cargo run -p blog-server
 ```
 
 The server will start an HTTP API on port 3000 and a gRPC server on port 50051 (defaults).
@@ -57,8 +49,7 @@ The app will be available at `http://localhost:8080`.
 ### 4. Using the CLI
 
 ```bash
-cd blog-cli
-cargo run -- --help
+cargo run -p blog-cli -- --help
 ```
 
 ## License

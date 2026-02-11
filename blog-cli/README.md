@@ -38,12 +38,8 @@ When you log in, the authentication token is stored locally in `~/.blog_token`. 
 ## Example
 
 ```bash
-# Register a user
-cargo run -- register-user --username myuser --password mypass --email user@example.com
-
-# Login
-cargo run -- login --username myuser --password mypass
-
-# Create a post
-cargo run -- create-post --title "Hello World" --content "This is my first post"
+# Get a post
+cargo run -- -a 'http://localhost:3000' get-post 12ee7619-f0a6-4046-92cc-28de8f8943e6
+# Update a post
+cargo run -- -a 'http://localhost:50051' --grpc update-post 12ee7619-f0a6-4046-92cc-28de8f8943e6 'title1' 'content1'
 ```

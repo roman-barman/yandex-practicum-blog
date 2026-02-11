@@ -32,12 +32,12 @@ Configuration is managed via `config/` directory. You can set environment variab
 
 ## Running the Server
 
-1. Ensure PostgreSQL is running.
-2. Run migrations:
+1. Run script:
    ```bash
-   cargo sqlx migrate run
+   chmod +x ../scripts/init_db.sh
+   ../scripts/init_db.sh
    ```
-3. Start the server:
+2. Start the server:
    ```bash
-   cargo run
+   APP_JWT__SECRET=<secret> cargo run
    ```
