@@ -30,7 +30,7 @@ pub(crate) async fn delete_post_handler(
 pub(crate) enum DeletePostError {
     #[error("post not found")]
     NotFound,
-    #[error("not allowed to update post")]
+    #[error("not allowed to delete post")]
     NotAllowed,
     #[error("unexpected error: {0}")]
     Unexpected(String),

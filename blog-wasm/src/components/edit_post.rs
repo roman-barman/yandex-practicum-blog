@@ -6,6 +6,7 @@ use serde::Serialize;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_router::prelude::use_navigator;
+use crate::components::error::Error;
 
 #[derive(Serialize)]
 struct UpdatePostRequest {
@@ -43,6 +44,9 @@ pub fn edit_post(props: &EditPostProps) -> Html {
                 let url = format!("http://localhost:3000/api/posts/{}", id);
                 let resp = Request::get(&url).send().await;
                 match resp {
+                    Ok(r) if r.status() == 404 => {
+                        error.set(Some(format!("Post with id {} not found", id)));
+                    },
                     Ok(r) => match r.json::<PostDetailInfo>().await {
                         Ok(data) => {
                             title.set(data.title);
@@ -118,7 +122,14 @@ pub fn edit_post(props: &EditPostProps) -> Html {
                         navigator.push(&Route::Home);
                     }
                     Ok(r) => {
-                        error.set(Some(format!("Update failed with status: {}", r.status())));
+                        match r.json::<Error>().await {
+                            Ok(data) => {
+                                error.set(Some(format!("Update failed: {}", data.message())));
+                            }
+                            Err(_) => {
+                                error.set(Some(format!("Update failed with status: {}", r.status())));
+                            }
+                        }
                     }
                     Err(e) => {
                         error.set(Some(format!("Request failed: {}", e)));

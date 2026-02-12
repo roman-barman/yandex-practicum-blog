@@ -5,6 +5,7 @@ mod posts_list;
 
 mod edit_post;
 mod register;
+mod error;
 
 pub use edit_post::*;
 pub use home::*;
