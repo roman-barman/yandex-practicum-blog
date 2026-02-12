@@ -2,7 +2,6 @@ use crate::components::PostsList;
 use crate::route::Route;
 use gloo_storage::{LocalStorage, Storage};
 use yew::{Callback, Html, component, html, use_state};
-use yew_router::hooks::use_navigator;
 use yew_router::prelude::Link;
 
 #[component(Home)]

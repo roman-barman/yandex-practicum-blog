@@ -1,3 +1,4 @@
+use crate::components::error::Error;
 use crate::route::Route;
 use gloo_net::http::Request;
 use gloo_storage::{LocalStorage, Storage};
@@ -5,7 +6,6 @@ use serde::{Deserialize, Serialize};
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_router::prelude::{Link, use_navigator};
-use crate::components::error::Error;
 
 #[derive(Serialize)]
 struct LoginRequest {
@@ -88,16 +88,14 @@ pub fn login() -> Html {
                     Ok(r) if r.status() == 401 => {
                         error.set(Some("Invalid username or password".to_string()));
                     }
-                    Ok(r) => {
-                        match r.json::<Error>().await {
-                            Ok(data) => {
-                                error.set(Some(format!("Login failed: {}", data.message())));
-                            }
-                            Err(_) => {
-                                error.set(Some(format!("Login failed with status: {}", r.status())));
-                            }
+                    Ok(r) => match r.json::<Error>().await {
+                        Ok(data) => {
+                            error.set(Some(format!("Login failed: {}", data.message())));
                         }
-                    }
+                        Err(_) => {
+                            error.set(Some(format!("Login failed with status: {}", r.status())));
+                        }
+                    },
                     Err(e) => {
                         error.set(Some(format!("Request failed: {}", e)));
                     }

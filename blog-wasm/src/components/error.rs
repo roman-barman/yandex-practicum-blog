@@ -10,4 +10,3 @@ impl Error {
         &self.error
     }
 }
-

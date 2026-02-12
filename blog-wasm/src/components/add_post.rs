@@ -1,3 +1,4 @@
+use crate::components::error::Error;
 use crate::route::Route;
 use gloo_net::http::Request;
 use gloo_storage::{LocalStorage, Storage};
@@ -5,7 +6,6 @@ use serde::Serialize;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_router::prelude::use_navigator;
-use crate::components::error::Error;
 
 #[derive(Serialize)]
 struct CreatePostRequest {
@@ -63,8 +63,8 @@ pub fn create_post() -> Html {
                     content: content_val,
                 };
 
-                let url = format!("http://localhost:3000/api/posts");
-                let resp = Request::post(&url)
+                let url = "http://localhost:3000/api/posts";
+                let resp = Request::post(url)
                     .header("Authorization", &format!("Bearer {}", token))
                     .json(&update_data)
                     .unwrap()
@@ -75,16 +75,14 @@ pub fn create_post() -> Html {
                     Ok(r) if r.ok() => {
                         navigator.push(&Route::Home);
                     }
-                    Ok(r) => {
-                        match r.json::<Error>().await {
-                            Ok(data) => {
-                                error.set(Some(format!("Create failed: {}", data.message())));
-                            }
-                            Err(_) => {
-                                error.set(Some(format!("Create failed with status: {}", r.status())));
-                            }
+                    Ok(r) => match r.json::<Error>().await {
+                        Ok(data) => {
+                            error.set(Some(format!("Create failed: {}", data.message())));
                         }
-                    }
+                        Err(_) => {
+                            error.set(Some(format!("Create failed with status: {}", r.status())));
+                        }
+                    },
                     Err(e) => {
                         error.set(Some(format!("Request failed: {}", e)));
                     }

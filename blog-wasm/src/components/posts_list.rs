@@ -1,9 +1,9 @@
+use crate::components::error::Error;
 use crate::route::Route;
 use gloo_net::http::Request;
 use gloo_storage::{LocalStorage, Storage};
 use yew::prelude::*;
 use yew_router::prelude::Link;
-use crate::components::error::Error;
 
 #[derive(Clone, PartialEq, Debug, serde::Deserialize)]
 pub struct Post {
@@ -127,16 +127,17 @@ pub fn posts_list(props: &PostsListProps) -> Html {
                         Ok(r) if r.ok() => {
                             refresh_trigger.set(*refresh_trigger + 1);
                         }
-                        Ok(r) => {
-                            match r.json::<Error>().await {
-                                Ok(data) => {
-                                    error.set(Some(format!("Delete failed: {}", data.message())));
-                                }
-                                Err(_) => {
-                                    error.set(Some(format!("Delete failed with status: {}", r.status())));
-                                }
+                        Ok(r) => match r.json::<Error>().await {
+                            Ok(data) => {
+                                error.set(Some(format!("Delete failed: {}", data.message())));
                             }
-                        }
+                            Err(_) => {
+                                error.set(Some(format!(
+                                    "Delete failed with status: {}",
+                                    r.status()
+                                )));
+                            }
+                        },
                         Err(e) => {
                             error.set(Some(format!("Request failed: {}", e)));
                         }

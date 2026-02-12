@@ -40,7 +40,7 @@ pub fn post_detail(props: &PostDetailProps) -> Html {
                 match resp {
                     Ok(r) if r.status() == 404 => {
                         error.set(Some(format!("Post with id {} not found", id)));
-                    },
+                    }
                     Ok(r) => match r.json::<PostDetailInfo>().await {
                         Ok(data) => {
                             post.set(Some(data));
