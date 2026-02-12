@@ -20,8 +20,14 @@ struct PostsResponse {
     offset: usize,
 }
 
+#[derive(Properties, PartialEq)]
+pub struct PostsListProps {
+    #[prop_or_default]
+    pub refresh_version: usize,
+}
+
 #[component(PostsList)]
-pub fn posts_list() -> Html {
+pub fn posts_list(props: &PostsListProps) -> Html {
     let posts = use_state(Vec::<Post>::new);
     let total = use_state(|| 0usize);
     let limit = use_state(|| 5usize);
@@ -30,6 +36,7 @@ pub fn posts_list() -> Html {
     let error = use_state(|| Option::<String>::None);
     let is_logged_in = use_state(|| LocalStorage::get::<String>("token").is_ok());
     let refresh_trigger = use_state(|| 0);
+    let parent_refresh = props.refresh_version;
 
     {
         let posts = posts.clone();
@@ -39,9 +46,10 @@ pub fn posts_list() -> Html {
         let loading = loading.clone();
         let error = error.clone();
         let refresh_trigger = refresh_trigger.clone();
+        let is_logged_in = is_logged_in.clone();
         use_effect_with(
-            (*limit, *offset, *refresh_trigger),
-            move |(limit, offset, _)| {
+            (*limit, *offset, *refresh_trigger, parent_refresh),
+            move |(limit, offset, _, _)| {
                 let l = *limit;
                 let o = *offset;
                 let posts = posts.clone();
@@ -50,6 +58,7 @@ pub fn posts_list() -> Html {
                 let error = error.clone();
                 loading.set(true);
                 error.set(None);
+                is_logged_in.set(LocalStorage::get::<String>("token").is_ok());
                 wasm_bindgen_futures::spawn_local(async move {
                     let url = format!("http://localhost:3000/api/posts?limit={}&offset={}", l, o);
                     let resp = Request::get(&url).send().await;

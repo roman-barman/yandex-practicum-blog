@@ -1,4 +1,3 @@
-use crate::components::PostDetailInfo;
 use crate::route::Route;
 use gloo_net::http::Request;
 use gloo_storage::{LocalStorage, Storage};

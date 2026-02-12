@@ -2,17 +2,21 @@ use crate::components::PostsList;
 use crate::route::Route;
 use gloo_storage::{LocalStorage, Storage};
 use yew::{Callback, Html, component, html, use_state};
+use yew_router::hooks::use_navigator;
 use yew_router::prelude::Link;
 
 #[component(Home)]
 pub fn home() -> Html {
     let is_logged_in = use_state(|| LocalStorage::get::<String>("token").is_ok());
+    let refresh_version = use_state(|| 0);
 
     let on_logout = {
         let is_logged_in = is_logged_in.clone();
+        let refresh_version = refresh_version.clone();
         Callback::from(move |_| {
             LocalStorage::delete("token");
             is_logged_in.set(false);
+            refresh_version.set(*refresh_version + 1);
         })
     };
 
@@ -38,7 +42,7 @@ pub fn home() -> Html {
         </div>
         <div class="row">
             <div class="col">
-                <PostsList />
+                <PostsList refresh_version={*refresh_version} />
             </div>
         </div>
     </div>
