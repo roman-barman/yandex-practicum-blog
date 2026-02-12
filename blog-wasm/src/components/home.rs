@@ -27,7 +27,9 @@ pub fn home() -> Html {
                 }
             </div>
             <div class="col-auto">
-                <Link<Route> to={Route::Register} classes="btn btn-light">{"Sign Up"}</Link<Route>>
+                if !*is_logged_in {
+                    <Link<Route> to={Route::Register} classes="btn btn-light">{"Sign Up"}</Link<Route>>
+                }
             </div>
             <div class="col">
             </div>
