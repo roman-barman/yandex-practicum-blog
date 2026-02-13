@@ -11,10 +11,15 @@ mod args;
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let args = args::Args::parse();
-    let protocol = if args.grpc {
-        blog_client::Protocol::Grpc(args.address)
+    let address = if args.address.starts_with("http://") {
+        args.address.to_string()
     } else {
-        blog_client::Protocol::Http(args.address)
+        format!("http://{}", args.address)
+    };
+    let protocol = if args.grpc {
+        blog_client::Protocol::Grpc(address)
+    } else {
+        blog_client::Protocol::Http(address)
     };
     let mut client = blog_client::Client::new(protocol).await?;
 
