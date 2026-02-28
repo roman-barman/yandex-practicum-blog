@@ -1,7 +1,7 @@
 use crate::components::error::Error;
 use crate::route::Route;
+use crate::token_storage::TokenStorage;
 use gloo_net::http::Request;
-use gloo_storage::{LocalStorage, Storage};
 use yew::prelude::*;
 use yew_router::prelude::Link;
 
@@ -34,7 +34,7 @@ pub fn posts_list(props: &PostsListProps) -> Html {
     let offset = use_state(|| 0usize);
     let loading = use_state(|| false);
     let error = use_state(|| Option::<String>::None);
-    let is_logged_in = use_state(|| LocalStorage::get::<String>("token").is_ok());
+    let is_logged_in = use_state(TokenStorage::is_logged_in);
     let refresh_trigger = use_state(|| 0);
     let parent_refresh = props.refresh_version;
 
@@ -58,7 +58,7 @@ pub fn posts_list(props: &PostsListProps) -> Html {
                 let error = error.clone();
                 loading.set(true);
                 error.set(None);
-                is_logged_in.set(LocalStorage::get::<String>("token").is_ok());
+                is_logged_in.set(TokenStorage::is_logged_in());
                 wasm_bindgen_futures::spawn_local(async move {
                     let url = format!("http://localhost:3000/api/posts?limit={}&offset={}", l, o);
                     let resp = Request::get(&url).send().await;
@@ -112,38 +112,33 @@ pub fn posts_list(props: &PostsListProps) -> Html {
             let refresh_trigger = refresh_trigger.clone();
             let error = error.clone();
             let loading = loading.clone();
-            let token = LocalStorage::get::<String>("token").ok();
+            let token = TokenStorage::get_token().unwrap_or_default();
 
             wasm_bindgen_futures::spawn_local(async move {
-                if let Some(t) = token {
-                    loading.set(true);
-                    let url = format!("http://localhost:3000/api/posts/{}", id);
-                    let resp = Request::delete(&url)
-                        .header("Authorization", &format!("Bearer {}", t))
-                        .send()
-                        .await;
+                loading.set(true);
+                let url = format!("http://localhost:3000/api/posts/{}", id);
+                let resp = Request::delete(&url)
+                    .header("Authorization", &format!("Bearer {}", token))
+                    .send()
+                    .await;
 
-                    match resp {
-                        Ok(r) if r.ok() => {
-                            refresh_trigger.set(*refresh_trigger + 1);
-                        }
-                        Ok(r) => match r.json::<Error>().await {
-                            Ok(data) => {
-                                error.set(Some(format!("Delete failed: {}", data.message())));
-                            }
-                            Err(_) => {
-                                error.set(Some(format!(
-                                    "Delete failed with status: {}",
-                                    r.status()
-                                )));
-                            }
-                        },
-                        Err(e) => {
-                            error.set(Some(format!("Request failed: {}", e)));
-                        }
+                match resp {
+                    Ok(r) if r.ok() => {
+                        refresh_trigger.set(*refresh_trigger + 1);
                     }
-                    loading.set(false);
+                    Ok(r) => match r.json::<Error>().await {
+                        Ok(data) => {
+                            error.set(Some(format!("Delete failed: {}", data.message())));
+                        }
+                        Err(_) => {
+                            error.set(Some(format!("Delete failed with status: {}", r.status())));
+                        }
+                    },
+                    Err(e) => {
+                        error.set(Some(format!("Request failed: {}", e)));
+                    }
                 }
+                loading.set(false);
             });
         })
     };

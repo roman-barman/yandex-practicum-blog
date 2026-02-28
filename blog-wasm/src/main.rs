@@ -1,5 +1,6 @@
 pub mod components;
 mod route;
+mod token_storage;
 
 use crate::route::{Route, switch};
 use yew::prelude::*;

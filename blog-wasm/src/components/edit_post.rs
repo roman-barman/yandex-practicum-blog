@@ -1,8 +1,8 @@
 use crate::components::PostDetailInfo;
 use crate::components::error::Error;
 use crate::route::Route;
+use crate::token_storage::TokenStorage;
 use gloo_net::http::Request;
-use gloo_storage::{LocalStorage, Storage};
 use serde::Serialize;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
@@ -103,7 +103,7 @@ pub fn edit_post(props: &EditPostProps) -> Html {
             error.set(None);
 
             wasm_bindgen_futures::spawn_local(async move {
-                let token = LocalStorage::get::<String>("token").unwrap_or_default();
+                let token = TokenStorage::get_token().unwrap_or_default();
                 let update_data = UpdatePostRequest {
                     title: title_val,
                     content: content_val,
